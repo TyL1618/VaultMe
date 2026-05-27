@@ -34,8 +34,14 @@ def run():
     theme.set_scale(scale)
     app.setStyleSheet(theme.get_stylesheet())
 
-    # ── 第一次使用：設定主密碼 ────────────────────────────────────────
-    if data_manager.is_first_time():
+    # ── 判斷是否為全新安裝 ───────────────────────────────────────────
+    # 有 vm_cloud.json 或有 vault.enc → 是回訪用戶，直接顯示解鎖畫面
+    # 兩者都沒有 → 才是真正第一次，顯示設定畫面
+    cloud_configured = bool(data_manager._load_cloud_cfg()[0])
+    truly_new = data_manager.is_first_time() and not cloud_configured
+
+    if truly_new:
+        # ── 全新安裝：設定主密碼 ──────────────────────────────────────
         dlg = RegisterDialog()
         _center(dlg, screen)
         if dlg.exec() != RegisterDialog.DialogCode.Accepted:
@@ -44,10 +50,14 @@ def run():
         data = data_manager.load_data(password)
         data_manager.save_data(data)   # 立刻建立 vault.enc，確保下次進入解鎖畫面
 
-    # ── 回訪：輸入主密碼解鎖 ─────────────────────────────────────────
     else:
-        data     = None
-        error    = ""
+        # ── 回訪 / 新裝置：輸入既有主密碼解鎖 ───────────────────────
+        data  = None
+        error = ""
+        # 新裝置提示（有 vm_cloud.json 但沒有 vault.enc）
+        if data_manager.is_first_time() and cloud_configured:
+            error = "新裝置：請輸入你的主密碼，將從雲端恢復資料"
+
         for _ in range(MAX_ATTEMPTS):
             dlg = LoginDialog(error_msg=error)
             _center(dlg, screen)
@@ -55,6 +65,9 @@ def run():
                 sys.exit(0)
             try:
                 data = data_manager.load_data(dlg.get_password())
+                # 新裝置第一次登入成功 → 立刻寫入 vault.enc
+                if not data_manager._load_local_blob():
+                    data_manager.save_data(data)
                 break
             except ValueError as e:
                 error = str(e)
