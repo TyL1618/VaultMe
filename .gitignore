@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.enc
+*.hint
+*.key
+vm_cloud.json
+.env
+dist/
+build/
+*.spec
