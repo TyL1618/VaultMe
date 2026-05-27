@@ -8,7 +8,7 @@ app.py - VaultMe 應用程式進入點
 import sys
 
 from PyQt6.QtWidgets import QApplication, QMessageBox
-from PyQt6.QtGui import QScreen
+from PyQt6.QtGui import QScreen, QIcon
 
 from vaultme import theme
 from vaultme.ui.login_dialog import LoginDialog, RegisterDialog
@@ -21,6 +21,12 @@ MAX_ATTEMPTS = 5
 def run():
     app = QApplication(sys.argv)
     app.setApplicationName("VaultMe")
+
+    # ── 應用程式圖示（工具列 + 視窗左上角）────────────────────────────
+    import os
+    _icon_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "icon.ico")
+    if os.path.exists(_icon_path):
+        app.setWindowIcon(QIcon(_icon_path))
 
     # ── DPI 縮放 ─────────────────────────────────────────────────────
     screen = app.primaryScreen()
