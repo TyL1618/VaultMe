@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem \"C:\\\\Users\\\\tyl16\\\\Documents\\\\Private\\\\VaultMe\" -Recurse)",
+      "Bash(Select-Object FullName, Length)"
+    ]
+  }
+}

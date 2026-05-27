@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#00f5ff">
+<title>VaultMe</title>
+<link rel="manifest" href="manifest.json">
+<style>
+/* ── Reset & Base ─────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05080f; --panel:#090f1a; --panel2:#0b1422;
+  --border:#1a3a55; --cyan:#00f5ff; --cyan-dim:#00a8b0;
+  --green:#00ff88; --green-dim:#00aa55;
+  --pink:#ff2d78; --red:#ff4444;
+  --text:#c8e0f0; --muted:#7aaabb;
+  --gold:#ffd700; --orange:#ff9500;
+  --font:'Courier New',monospace;
+  --r:6px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;overflow:hidden}
+button{cursor:pointer;font-family:var(--font)}
+input,textarea,select{font-family:var(--font)}
+::placeholder{color:var(--muted);opacity:.7}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--panel)}
+::-webkit-scrollbar-thumb{background:var(--cyan-dim);border-radius:3px}
+
+/* ── Layout ───────────────────────────────────────────────── */
+#app{display:flex;flex-direction:column;height:100%;max-width:640px;margin:0 auto}
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden}
+.screen.active{display:flex}
+
+/* ── Typography ───────────────────────────────────────────── */
+.title{color:var(--cyan);font-size:22px;font-weight:bold;letter-spacing:6px}
+.sub{color:var(--muted);font-size:10px;letter-spacing:4px;margin-top:4px}
+.muted{color:var(--muted);font-size:12px}
+.badge{display:inline-block;font-size:10px;padding:1px 7px;border-radius:3px;letter-spacing:1px;border:1px solid}
+
+/* ── Input / Button ───────────────────────────────────────── */
+.input{
+  width:100%;background:rgba(0,245,255,.04);
+  border:1px solid var(--border);border-radius:var(--r);
+  color:var(--text);font-size:14px;padding:10px 12px;
+  outline:none;transition:border-color .2s;
+}
+.input:focus{border-color:var(--cyan-dim)}
+.input-row{display:flex;gap:8px;align-items:center}
+.input-row .input{flex:1}
+.icon-btn{
+  background:rgba(0,245,255,.04);border:1px solid var(--border);
+  border-radius:var(--r);color:var(--muted);font-size:16px;
+  width:40px;height:40px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+}
+.icon-btn:hover,.icon-btn:active{background:rgba(0,245,255,.12);color:var(--cyan)}
+
+.btn{
+  display:block;width:100%;padding:13px;
+  background:rgba(0,245,255,.08);border:1px solid var(--cyan-dim);
+  border-radius:var(--r);color:var(--cyan);font-size:13px;letter-spacing:2px;
+  transition:background .2s;
+}
+.btn:hover,.btn:active{background:rgba(0,245,255,.18)}
+.btn-green{background:rgba(0,255,136,.08);border-color:rgba(0,255,136,.4);color:var(--green)}
+.btn-green:hover{background:rgba(0,255,136,.16)}
+.btn-pink{background:rgba(255,45,120,.08);border-color:rgba(255,45,120,.4);color:var(--pink)}
+.btn-pink:hover{background:rgba(255,45,120,.16)}
+.btn-sm{padding:5px 12px;font-size:11px;width:auto}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--muted)}
+.btn-ghost:hover{background:rgba(255,255,255,.04)}
+
+/* ── Card ─────────────────────────────────────────────────── */
+.card{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:var(--r);padding:12px 14px;
+  transition:border-color .2s;
+}
+.card:active{border-color:rgba(0,168,176,.5)}
+
+/* ── Divider ──────────────────────────────────────────────── */
+.sep{height:1px;background:var(--border);margin:12px 0}
+
+/* ── Toast ────────────────────────────────────────────────── */
+#toast{
+  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:#0d2035;border:1px solid var(--cyan-dim);border-radius:6px;
+  color:var(--cyan);font-size:12px;padding:8px 18px;letter-spacing:1px;
+  opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:999;
+  white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── Modal ────────────────────────────────────────────────── */
+.modal-backdrop{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.7);z-index:100;align-items:flex-end;
+}
+.modal-backdrop.open{display:flex}
+.modal{
+  width:100%;max-width:640px;margin:0 auto;
+  background:#07101e;border:1px solid var(--cyan-dim);
+  border-radius:12px 12px 0 0;padding:20px 20px 32px;
+  max-height:90vh;overflow-y:auto;
+  animation:slide-up .25s ease;
+}
+@keyframes slide-up{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-title{color:var(--cyan);font-size:16px;font-weight:bold;letter-spacing:2px;margin-bottom:16px}
+.form-label{color:var(--muted);font-size:11px;letter-spacing:1px;margin-bottom:5px;display:block}
+.form-group{margin-bottom:12px}
+
+/* ── Login Screen ─────────────────────────────────────────── */
+#screen-login{justify-content:center;align-items:center;padding:32px 24px;gap:0}
+.login-box{width:100%;max-width:360px}
+.login-logo{text-align:center;margin-bottom:32px}
+.login-form{display:flex;flex-direction:column;gap:12px}
+.login-err{
+  background:rgba(255,45,120,.08);border:1px solid rgba(255,45,120,.3);
+  border-radius:var(--r);color:var(--pink);font-size:12px;
+  padding:8px 12px;display:none;
+}
+.login-err.show{display:block}
+.login-tabs{display:flex;gap:0;margin-bottom:16px}
+.login-tab{
+  flex:1;padding:8px;background:var(--panel2);
+  border:1px solid var(--border);color:var(--muted);
+  font-family:var(--font);font-size:11px;letter-spacing:1px;cursor:pointer;
+}
+.login-tab:first-child{border-radius:var(--r) 0 0 var(--r);border-right:none}
+.login-tab:last-child{border-radius:0 var(--r) var(--r) 0}
+.login-tab.active{background:rgba(0,245,255,.1);color:var(--cyan);border-color:var(--cyan-dim)}
+
+/* ── Header ───────────────────────────────────────────────── */
+.topbar{
+  background:var(--panel);border-bottom:1px solid var(--border);
+  padding:12px 16px;display:flex;align-items:center;gap:10px;
+  flex-shrink:0;
+}
+.topbar-title{color:var(--cyan);font-size:15px;font-weight:bold;letter-spacing:3px;flex:1}
+
+/* ── Category Tabs ────────────────────────────────────────── */
+.cat-scroll{
+  display:flex;gap:6px;padding:10px 16px;
+  overflow-x:auto;flex-shrink:0;
+  scrollbar-width:none;
+}
+.cat-scroll::-webkit-scrollbar{display:none}
+.cat-btn{
+  white-space:nowrap;padding:5px 14px;
+  background:transparent;border:1px solid var(--border);
+  border-radius:20px;color:var(--muted);font-size:11px;
+  letter-spacing:1px;transition:all .2s;flex-shrink:0;
+}
+.cat-btn.active{border-color:var(--cyan-dim);color:var(--cyan);background:rgba(0,245,255,.08)}
+
+/* ── Search ───────────────────────────────────────────────── */
+.search-wrap{padding:0 16px 10px;flex-shrink:0}
+
+/* ── List ─────────────────────────────────────────────────── */
+.entry-list{flex:1;overflow-y:auto;padding:0 16px 16px}
+.entry-card{margin-bottom:8px}
+.entry-name{font-size:14px;font-weight:bold;color:var(--text);margin-bottom:4px}
+.entry-account{font-size:11px;color:var(--muted)}
+.entry-actions{display:flex;gap:6px;margin-top:8px;align-items:center}
+.entry-pwd{flex:1;font-size:11px;color:var(--muted);font-family:var(--font);letter-spacing:1px;word-break:break-all}
+.entry-pwd.visible{color:var(--green)}
+.copy-btn-timer{min-width:52px;text-align:center}
+.empty{text-align:center;padding:60px 20px;color:var(--border);font-size:13px}
+
+/* ── Bottom Nav ───────────────────────────────────────────── */
+.bottom-nav{
+  display:flex;background:var(--panel);
+  border-top:1px solid var(--border);flex-shrink:0;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-btn{
+  flex:1;display:flex;flex-direction:column;align-items:center;
+  padding:10px 0;background:transparent;border:none;
+  color:var(--muted);font-size:10px;letter-spacing:1px;gap:2px;
+  transition:color .2s;
+}
+.nav-btn .nav-icon{font-size:18px}
+.nav-btn.active{color:var(--cyan)}
+
+/* ── Extra fields ─────────────────────────────────────────── */
+.extra-row{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.extra-label-input{width:110px;flex-shrink:0}
+.extra-val-input{flex:1}
+.extra-remove{width:32px;height:32px;background:transparent;border:1px solid rgba(255,45,120,.3);border-radius:var(--r);color:var(--pink);flex-shrink:0}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ── Toast ──────────────────────────────────────────────────────────── -->
+<div id="toast"></div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- SCREEN: Login                                                       -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div id="screen-login" class="screen active">
+  <div class="login-box">
+    <div class="login-logo">
+      <div class="title">🔐 VAULT ME</div>
+      <div class="sub">SECURE PASSWORD MANAGER</div>
+    </div>
+
+    <!-- 登入方式切換 -->
+    <div class="login-tabs">
+      <button class="login-tab active" id="tab-pwd" onclick="switchLoginTab('pwd')">主密碼</button>
+      <button class="login-tab" id="tab-bio" onclick="switchLoginTab('bio')">指紋解鎖</button>
+    </div>
+
+    <!-- 主密碼登入 -->
+    <div id="panel-pwd" class="login-form">
+      <div class="form-group">
+        <label class="form-label">Supabase 帳號 Email</label>
+        <input type="email" class="input" id="login-email" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Supabase 帳號密碼</label>
+        <input type="password" class="input" id="login-sb-pwd" placeholder="Supabase 帳號密碼" autocomplete="current-password">
+      </div>
+      <div class="form-group">
+        <label class="form-label">主密碼（加密金鑰）</label>
+        <div class="input-row">
+          <input type="password" class="input" id="login-master-pwd" placeholder="主密碼" autocomplete="off">
+          <button class="icon-btn" onclick="toggleVis('login-master-pwd',this)">👁</button>
+        </div>
+      </div>
+      <div class="login-err" id="login-err"></div>
+      <button class="btn" onclick="doLogin()" id="login-btn">解鎖  →</button>
+    </div>
+
+    <!-- 指紋解鎖 -->
+    <div id="panel-bio" class="login-form" style="display:none">
+      <div style="text-align:center;padding:20px 0;font-size:48px">🫆</div>
+      <p class="muted" style="text-align:center;margin-bottom:16px">使用已註冊的指紋 / Face ID 解鎖</p>
+      <div class="login-err" id="bio-err"></div>
+      <button class="btn" onclick="doBioAuth()" id="bio-btn">指紋驗證</button>
+      <div style="margin-top:12px;text-align:center">
+        <button class="btn btn-ghost btn-sm" onclick="switchLoginTab('pwd')">改用密碼登入</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- SCREEN: Vault                                                       -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div id="screen-vault" class="screen" style="background:var(--bg)">
+  <!-- 頂部列 -->
+  <div class="topbar">
+    <span class="topbar-title">🔐 VAULT ME</span>
+    <button class="icon-btn" id="sync-btn" title="同步" onclick="manualSync()">⟳</button>
+  </div>
+
+  <!-- 分類標籤 -->
+  <div class="cat-scroll" id="cat-scroll"></div>
+
+  <!-- 搜尋 -->
+  <div class="search-wrap">
+    <input type="search" class="input" id="search-input" placeholder="🔍 搜尋名稱、帳號…" oninput="renderList()">
+  </div>
+
+  <!-- 項目列表 -->
+  <div class="entry-list" id="entry-list"></div>
+
+  <!-- 底部導覽 -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="showTab('vault')">
+      <span class="nav-icon">🔐</span><span>保險箱</span>
+    </button>
+    <button class="nav-btn" onclick="openAddModal()">
+      <span class="nav-icon">＋</span><span>新增</span>
+    </button>
+    <button class="nav-btn" onclick="showTab('settings')">
+      <span class="nav-icon">⚙</span><span>設定</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- SCREEN: Settings                                                    -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div id="screen-settings" class="screen" style="background:var(--bg)">
+  <div class="topbar">
+    <button class="icon-btn" onclick="showTab('vault')" style="width:32px;height:32px;font-size:18px">←</button>
+    <span class="topbar-title" style="font-size:13px">設定</span>
+  </div>
+  <div style="padding:20px 16px;overflow-y:auto;flex:1">
+    <div class="card" style="margin-bottom:12px">
+      <div style="color:var(--cyan-dim);font-size:11px;letter-spacing:2px;margin-bottom:10px">指紋 / Face ID</div>
+      <p class="muted" style="margin-bottom:12px;font-size:12px">下次登入可直接用指紋解鎖，無需輸入密碼。</p>
+      <button class="btn btn-sm" id="webauthn-reg-btn" onclick="registerWebAuthn()">註冊指紋</button>
+      <div id="webauthn-status" class="muted" style="margin-top:8px;font-size:11px"></div>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div style="color:var(--cyan-dim);font-size:11px;letter-spacing:2px;margin-bottom:10px">帳號資訊</div>
+      <p class="muted" style="font-size:12px" id="settings-email-info">—</p>
+    </div>
+    <div class="card">
+      <div style="color:var(--cyan-dim);font-size:11px;letter-spacing:2px;margin-bottom:10px">操作</div>
+      <button class="btn btn-pink btn-sm" onclick="doLogout()">登出</button>
+    </div>
+  </div>
+  <nav class="bottom-nav">
+    <button class="nav-btn" onclick="showTab('vault')">
+      <span class="nav-icon">🔐</span><span>保險箱</span>
+    </button>
+    <button class="nav-btn" onclick="openAddModal()">
+      <span class="nav-icon">＋</span><span>新增</span>
+    </button>
+    <button class="nav-btn active" onclick="showTab('settings')">
+      <span class="nav-icon">⚙</span><span>設定</span>
+    </button>
+  </nav>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL: 新增 / 編輯                                                  -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="entry-modal">
+  <div class="modal">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div class="modal-title" id="modal-title">新增項目</div>
+      <button class="icon-btn" style="width:32px;height:32px;font-size:16px" onclick="closeModal()">✕</button>
+    </div>
+
+    <input type="hidden" id="entry-id">
+
+    <div class="form-group">
+      <label class="form-label">名稱 *</label>
+      <input type="text" class="input" id="entry-name" placeholder="例：台新銀行網銀">
+    </div>
+    <div class="form-group">
+      <label class="form-label">分類</label>
+      <select class="input" id="entry-cat">
+        <option>銀行</option><option>社群</option>
+        <option>Email</option><option>軟體</option><option>其他</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">帳號 / Email / 使用者名稱</label>
+      <input type="text" class="input" id="entry-account" placeholder="帳號" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label">密碼 *</label>
+      <div class="input-row">
+        <input type="password" class="input" id="entry-pwd" placeholder="密碼" autocomplete="new-password">
+        <button class="icon-btn" onclick="toggleVis('entry-pwd',this)">👁</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">網址（選填）</label>
+      <input type="url" class="input" id="entry-url" placeholder="https://…">
+    </div>
+    <div class="form-group">
+      <label class="form-label">備註（選填）</label>
+      <textarea class="input" id="entry-note" rows="3" placeholder="備註…" style="resize:vertical"></textarea>
+    </div>
+
+    <!-- 自訂欄位 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <span style="color:var(--cyan-dim);font-size:11px;letter-spacing:2px">自訂欄位</span>
+      <button class="btn btn-sm btn-ghost" onclick="addExtraField('','')">＋ 新增欄位</button>
+    </div>
+    <div id="extra-fields-container"></div>
+
+    <div class="sep"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-pink" id="delete-entry-btn" style="display:none;flex:1" onclick="deleteCurrentEntry()">刪除</button>
+      <button class="btn btn-ghost" style="flex:1" onclick="closeModal()">取消</button>
+      <button class="btn" style="flex:1" onclick="saveEntry()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- Scripts                                                             -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<script type="module">
+// ── Supabase JS SDK v2 (CDN) ──────────────────────────────────────────
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+
+// ══════════════════════════════════════════════════════════════════════
+// CONFIG：在這裡填入你的 Supabase 設定
+// ══════════════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://glbvqhfjqjsnboqkvgjg.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_mulz7CNmTKYZERhXTIggLQ_yTU4yQQ8';
+
+const TABLE        = 'vaultme';
+const PBKDF2_ITER  = 260_000;
+const WEBAUTHN_RP  = { name: 'VaultMe', id: location.hostname };
+
+// ── State ─────────────────────────────────────────────────────────────
+let supabase      = null;
+let _entries      = [];          // 已解密的密碼項目陣列
+let _masterPwd    = '';
+let _salt         = null;        // ArrayBuffer，與桌面版共用
+let _currentCat   = '全部';
+let _clipTimer    = null;
+let _clipBtn      = null;
+let _editingId    = null;        // 正在編輯的 entry id
+let _undoStack    = [];
+const CATS        = ['全部','銀行','社群','Email','軟體','其他'];
+const CAT_COLORS  = {銀行:'#ffd700',社群:'#00f5ff',Email:'#ff9500',軟體:'#00ff88',其他:'#7aaabb'};
+
+// ══════════════════════════════════════════════════════════════════════
+// Crypto
+// ══════════════════════════════════════════════════════════════════════
+async function deriveKey(password, saltBuf) {
+  const enc = new TextEncoder();
+  const km  = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt:saltBuf, iterations:PBKDF2_ITER, hash:'SHA-256' },
+    km, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
+  );
+}
+
+function b64e(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)));
+}
+function b64d(str) {
+  const bin = atob(str);
+  const buf = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+  return buf.buffer;
+}
+
+async function encryptData(plaintext, password, existingSalt = null) {
+  const enc    = new TextEncoder();
+  const salt   = existingSalt || crypto.getRandomValues(new Uint8Array(32)).buffer;
+  const key    = await deriveKey(password, salt);
+  const nonce  = crypto.getRandomValues(new Uint8Array(12));
+  const cipher = await crypto.subtle.encrypt(
+    { name:'AES-GCM', iv:nonce }, key, enc.encode(plaintext)
+  );
+  return JSON.stringify({ salt:b64e(salt), nonce:b64e(nonce.buffer), ciphertext:b64e(cipher) });
+}
+
+async function decryptData(blobStr, password) {
+  const blob   = JSON.parse(blobStr);
+  const salt   = b64d(blob.salt);
+  const nonce  = b64d(blob.nonce);
+  const cipher = b64d(blob.ciphertext);
+  const key    = await deriveKey(password, salt);
+  let plain;
+  try {
+    plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv:nonce }, key, cipher);
+  } catch {
+    throw new Error('密碼錯誤或資料損毀');
+  }
+  _salt = salt;   // 記住 salt，下次加密重用
+  return new TextDecoder().decode(plain);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// Supabase helpers
+// ══════════════════════════════════════════════════════════════════════
+function getClient() {
+  if (!supabase) supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+  return supabase;
+}
+
+async function cloudPull(userId) {
+  const { data, error } = await getClient()
+    .from(TABLE).select('payload,updated').eq('id', userId).single();
+  if (error || !data) return null;
+  return data.payload;
+}
+
+async function cloudPush(userId, payloadStr) {
+  const { error } = await getClient().from(TABLE).upsert(
+    { id:userId, payload:payloadStr, updated: new Date().toISOString() },
+    { onConflict:'id' }
+  );
+  return !error;
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// Login
+// ══════════════════════════════════════════════════════════════════════
+window.switchLoginTab = (tab) => {
+  document.getElementById('tab-pwd').classList.toggle('active', tab === 'pwd');
+  document.getElementById('tab-bio').classList.toggle('active', tab === 'bio');
+  document.getElementById('panel-pwd').style.display = tab === 'pwd' ? 'flex' : 'none';
+  document.getElementById('panel-bio').style.display = tab === 'bio' ? 'flex' : 'none';
+};
+
+window.doLogin = async () => {
+  const email    = document.getElementById('login-email').value.trim();
+  const sbPwd    = document.getElementById('login-sb-pwd').value;
+  const masterP  = document.getElementById('login-master-pwd').value;
+  const errEl    = document.getElementById('login-err');
+  const btn      = document.getElementById('login-btn');
+
+  errEl.classList.remove('show');
+  if (!email || !sbPwd || !masterP) {
+    errEl.textContent = '請填寫所有欄位';
+    errEl.classList.add('show'); return;
+  }
+
+  btn.textContent = '登入中…'; btn.disabled = true;
+  try {
+    const { data: authData, error: authErr } = await getClient()
+      .auth.signInWithPassword({ email, password: sbPwd });
+    if (authErr) throw new Error(authErr.message);
+
+    _masterPwd = masterP;
+    const userId = authData.user.id;
+
+    // 拉雲端資料
+    const payload = await cloudPull(userId);
+    if (payload) {
+      const plain = await decryptData(payload, masterP);
+      const obj   = JSON.parse(plain);
+      _entries    = obj.entries || [];
+    } else {
+      _entries = [];
+    }
+
+    // 儲存 session token 到 localStorage（供 WebAuthn 使用）
+    localStorage.setItem('vm_email', email);
+    localStorage.setItem('vm_user_id', userId);
+
+    // 詢問是否要設定 WebAuthn（首次）
+    if (!localStorage.getItem('vm_webauthn_cred_id') && window.PublicKeyCredential) {
+      const regPrompt = confirm('要設定指紋 / Face ID 快速登入嗎？');
+      if (regPrompt) await _registerWebAuthnInternal(masterP, userId);
+    }
+
+    enterVault();
+  } catch (e) {
+    errEl.textContent = e.message || '登入失敗';
+    errEl.classList.add('show');
+  } finally {
+    btn.textContent = '解鎖  →'; btn.disabled = false;
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// WebAuthn
+// ══════════════════════════════════════════════════════════════════════
+async function _registerWebAuthnInternal(masterPwd, userId) {
+  try {
+    // 產生一個隨機 challenge
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+
+    const cred = await navigator.credentials.create({ publicKey: {
+      challenge,
+      rp: WEBAUTHN_RP,
+      user: { id: new TextEncoder().encode(userId), name: localStorage.getItem('vm_email'), displayName: 'VaultMe' },
+      pubKeyCredParams: [{ type:'public-key', alg:-7 }, { type:'public-key', alg:-257 }],
+      authenticatorSelection: { userVerification:'required', residentKey:'preferred' },
+      timeout: 60000,
+    }});
+
+    // 把 cred ID 存 localStorage，並用它保護主密碼
+    const credId    = b64e(cred.rawId);
+    // 用 WebAuthn assertion 衍生出一個包裝金鑰，加密主密碼
+    const wrappedPwd = await _wrapMasterPwd(masterPwd, cred.rawId);
+
+    localStorage.setItem('vm_webauthn_cred_id', credId);
+    localStorage.setItem('vm_wrapped_master',   wrappedPwd);
+    showToast('指紋已設定 ✓');
+  } catch (e) {
+    console.warn('WebAuthn 註冊失敗', e);
+  }
+}
+
+window.registerWebAuthn = async () => {
+  const sb = getClient();
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { showToast('請先登入'); return; }
+  await _registerWebAuthnInternal(_masterPwd, user.id);
+  document.getElementById('webauthn-status').textContent = '已設定指紋登入';
+};
+
+window.doBioAuth = async () => {
+  const errEl   = document.getElementById('bio-err');
+  const btn     = document.getElementById('bio-btn');
+  const credId  = localStorage.getItem('vm_webauthn_cred_id');
+  if (!credId) { errEl.textContent='尚未設定指紋'; errEl.classList.add('show'); return; }
+
+  btn.textContent='驗證中…'; btn.disabled=true;
+  errEl.classList.remove('show');
+  try {
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const assertion = await navigator.credentials.get({ publicKey: {
+      challenge,
+      allowCredentials: [{ type:'public-key', id:b64d(credId) }],
+      userVerification: 'required',
+      timeout: 60000,
+    }});
+
+    const masterPwd = await _unwrapMasterPwd(assertion.rawId);
+    _masterPwd = masterPwd;
+
+    // Supabase session restore
+    const email  = localStorage.getItem('vm_email');
+    // 無法無密碼取得 session，需要 refresh token（此處提示用戶改用密碼登入重整）
+    // 簡化實作：直接用已快取的 access token 嘗試 getUser
+    const { data: { user } } = await getClient().auth.getUser();
+    if (!user) throw new Error('Session 已過期，請用密碼重新登入');
+
+    const payload = await cloudPull(user.id);
+    if (payload) {
+      const plain = await decryptData(payload, masterPwd);
+      _entries    = JSON.parse(plain).entries || [];
+    } else {
+      _entries = [];
+    }
+    enterVault();
+  } catch (e) {
+    errEl.textContent = e.message || '指紋驗證失敗';
+    errEl.classList.add('show');
+  } finally {
+    btn.textContent='指紋驗證'; btn.disabled=false;
+  }
+};
+
+// 用隨機派生金鑰包裝主密碼（PBKDF2 + AES-GCM，以 credId 為 salt）
+async function _wrapMasterPwd(masterPwd, credIdBuf) {
+  const wrapSalt  = credIdBuf.slice(0, 32).byteLength >= 16 ? credIdBuf.slice(0, 32)
+                    : crypto.getRandomValues(new Uint8Array(32)).buffer;
+  const wrapNonce = crypto.getRandomValues(new Uint8Array(12));
+  const enc       = new TextEncoder();
+  const km        = await crypto.subtle.importKey('raw', credIdBuf, 'PBKDF2', false, ['deriveKey']);
+  const wKey      = await crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt:wrapSalt, iterations:100_000, hash:'SHA-256' },
+    km, { name:'AES-GCM', length:256 }, false, ['encrypt']
+  );
+  const cipher = await crypto.subtle.encrypt({ name:'AES-GCM', iv:wrapNonce }, wKey, enc.encode(masterPwd));
+  return JSON.stringify({ salt:b64e(wrapSalt), nonce:b64e(wrapNonce.buffer), cipher:b64e(cipher) });
+}
+
+async function _unwrapMasterPwd(credIdBuf) {
+  const obj      = JSON.parse(localStorage.getItem('vm_wrapped_master'));
+  const wrapSalt = b64d(obj.salt);
+  const nonce    = b64d(obj.nonce);
+  const cipher   = b64d(obj.cipher);
+  const km       = await crypto.subtle.importKey('raw', credIdBuf, 'PBKDF2', false, ['deriveKey']);
+  const wKey     = await crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt:wrapSalt, iterations:100_000, hash:'SHA-256' },
+    km, { name:'AES-GCM', length:256 }, false, ['decrypt']
+  );
+  const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv:nonce }, wKey, cipher);
+  return new TextDecoder().decode(plain);
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// Vault Screen
+// ══════════════════════════════════════════════════════════════════════
+function enterVault() {
+  document.getElementById('screen-login').classList.remove('active');
+  document.getElementById('screen-vault').classList.add('active');
+  buildCatTabs();
+  renderList();
+  updateSettingsInfo();
+}
+
+function buildCatTabs() {
+  const el = document.getElementById('cat-scroll');
+  el.innerHTML = CATS.map(c => `
+    <button class="cat-btn ${c === _currentCat ? 'active' : ''}"
+            onclick="selectCat('${c}')">${c}</button>
+  `).join('');
+}
+
+window.selectCat = (cat) => {
+  _currentCat = cat;
+  document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.textContent === cat));
+  renderList();
+};
+
+function filteredEntries() {
+  const q = document.getElementById('search-input')?.value.toLowerCase() || '';
+  return _entries.filter(e => {
+    if (_currentCat !== '全部' && e.category !== _currentCat) return false;
+    if (q && !e.name?.toLowerCase().includes(q) && !e.account?.toLowerCase().includes(q)) return false;
+    return true;
+  }).sort((a,b) => a.name.localeCompare(b.name, 'zh-TW'));
+}
+
+window.renderList = () => {
+  const list = document.getElementById('entry-list');
+  const entries = filteredEntries();
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty">— 沒有項目 —</div>'; return;
+  }
+  list.innerHTML = entries.map(e => entryCardHtml(e)).join('');
+};
+
+function entryCardHtml(e) {
+  const color = CAT_COLORS[e.category] || 'var(--muted)';
+  return `
+  <div class="card entry-card" id="card-${e.id}">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+      <span class="entry-name">${esc(e.name)}</span>
+      <span class="badge" style="color:${color};border-color:${color}44">${esc(e.category)}</span>
+    </div>
+    <div class="entry-account">${esc(e.account||'—')}</div>
+    <div class="entry-actions">
+      <span class="entry-pwd" id="pwd-txt-${e.id}">●●●●●●●●</span>
+      <button class="icon-btn" style="width:30px;height:30px;font-size:14px"
+              onclick="toggleEntryPwd('${e.id}')">👁</button>
+      <button class="btn btn-sm btn-green copy-btn-timer" id="copy-btn-${e.id}"
+              onclick="copyPwd('${e.id}','${escAttr(e.password)}')">複製</button>
+      <button class="btn btn-sm" style="border-color:var(--cyan-dim);color:var(--cyan-dim)"
+              onclick="openEditModal('${e.id}')">編輯</button>
+    </div>
+    ${e.extra_fields?.length ? extraFieldsHtml(e.extra_fields) : ''}
+  </div>`;
+}
+
+function extraFieldsHtml(fields) {
+  return `<div style="margin-top:8px;border-top:1px solid var(--border);padding-top:8px">` +
+    fields.filter(f=>f.label||f.value).map(f=>`
+      <div style="display:flex;gap:8px;font-size:11px;margin-bottom:4px">
+        <span style="color:var(--muted);min-width:90px">${esc(f.label)}</span>
+        <span style="color:var(--text)">${esc(f.value)}</span>
+      </div>`).join('') + `</div>`;
+}
+
+// 顯示 / 隱藏密碼
+window.toggleEntryPwd = (id) => {
+  const el    = document.getElementById(`pwd-txt-${id}`);
+  const entry = _entries.find(e => e.id === id);
+  if (!entry) return;
+  const vis = !el.classList.contains('visible');
+  el.classList.toggle('visible', vis);
+  el.textContent = vis ? entry.password : '●●●●●●●●';
+};
+
+// 複製密碼（30 秒清除）
+window.copyPwd = (id, pwd) => {
+  try { navigator.clipboard.writeText(pwd); } catch {}
+
+  // 清除上一個計時器
+  if (_clipTimer) { clearInterval(_clipTimer); _clipTimer = null; }
+  if (_clipBtn)   { _clipBtn.textContent = '複製'; }
+
+  const btn = document.getElementById(`copy-btn-${id}`);
+  if (!btn) return;
+  _clipBtn = btn;
+  let sec  = 30;
+  btn.textContent = `${sec}s`;
+
+  _clipTimer = setInterval(() => {
+    sec--;
+    if (btn) btn.textContent = sec > 0 ? `${sec}s` : '複製';
+    if (sec <= 0) {
+      clearInterval(_clipTimer); _clipTimer = null; _clipBtn = null;
+      try { navigator.clipboard.writeText(''); } catch {}
+    }
+  }, 1000);
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Entry Modal
+// ══════════════════════════════════════════════════════════════════════
+window.openAddModal = () => {
+  _editingId = null;
+  document.getElementById('modal-title').textContent = '新增項目';
+  document.getElementById('delete-entry-btn').style.display = 'none';
+  clearForm();
+  openModal();
+};
+
+window.openEditModal = (id) => {
+  const e = _entries.find(e => e.id === id);
+  if (!e) return;
+  _editingId = id;
+  document.getElementById('modal-title').textContent = '編輯項目';
+  document.getElementById('delete-entry-btn').style.display = 'block';
+  fillForm(e);
+  openModal();
+};
+
+function clearForm() {
+  ['entry-name','entry-account','entry-pwd','entry-url','entry-note'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('entry-cat').value = '其他';
+  document.getElementById('extra-fields-container').innerHTML = '';
+}
+
+function fillForm(e) {
+  document.getElementById('entry-name').value    = e.name    || '';
+  document.getElementById('entry-account').value = e.account || '';
+  document.getElementById('entry-pwd').value     = e.password|| '';
+  document.getElementById('entry-url').value     = e.url     || '';
+  document.getElementById('entry-note').value    = e.note    || '';
+  document.getElementById('entry-cat').value     = e.category|| '其他';
+  document.getElementById('extra-fields-container').innerHTML = '';
+  (e.extra_fields || []).forEach(f => addExtraField(f.label, f.value));
+}
+
+window.addExtraField = (label = '', value = '') => {
+  const id  = Date.now();
+  const row = document.createElement('div');
+  row.className = 'extra-row';
+  row.id = `extra-${id}`;
+  row.innerHTML = `
+    <input type="text" class="input extra-label-input" placeholder="欄位名稱" value="${escAttr(label)}">
+    <input type="text" class="input extra-val-input"   placeholder="值"       value="${escAttr(value)}">
+    <button class="extra-remove" onclick="document.getElementById('extra-${id}').remove()">✕</button>
+  `;
+  document.getElementById('extra-fields-container').appendChild(row);
+};
+
+window.saveEntry = async () => {
+  const name = document.getElementById('entry-name').value.trim();
+  const pwd  = document.getElementById('entry-pwd').value;
+  if (!name || !pwd) { showToast('名稱和密碼不能為空'); return; }
+
+  const extra = Array.from(document.querySelectorAll('#extra-fields-container .extra-row'))
+    .map(row => ({
+      label: row.querySelector('.extra-label-input').value.trim(),
+      value: row.querySelector('.extra-val-input').value.trim(),
+    })).filter(f => f.label || f.value);
+
+  const entry = {
+    id:           _editingId || crypto.randomUUID(),
+    category:     document.getElementById('entry-cat').value,
+    name,
+    account:      document.getElementById('entry-account').value.trim(),
+    password:     pwd,
+    url:          document.getElementById('entry-url').value.trim(),
+    note:         document.getElementById('entry-note').value.trim(),
+    extra_fields: extra,
+    updated_at:   new Date().toISOString(),
+  };
+
+  if (_editingId) {
+    const idx = _entries.findIndex(e => e.id === _editingId);
+    if (idx >= 0) _entries[idx] = entry;
+  } else {
+    _entries.push(entry);
+  }
+
+  closeModal();
+  renderList();
+  await saveToCloud();
+  showToast(_editingId ? '已更新 ✓' : '已新增 ✓');
+};
+
+window.deleteCurrentEntry = async () => {
+  if (!_editingId) return;
+  const e = _entries.find(e => e.id === _editingId);
+  if (!confirm(`確定刪除「${e?.name}」？`)) return;
+  _undoStack.push({...e});
+  _entries = _entries.filter(e => e.id !== _editingId);
+  closeModal();
+  renderList();
+  await saveToCloud();
+  showToast('已刪除（可在頁面右下復原）');
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Cloud Save
+// ══════════════════════════════════════════════════════════════════════
+async function saveToCloud() {
+  try {
+    const { data: { user } } = await getClient().auth.getUser();
+    if (!user) return;
+    const plain   = JSON.stringify({ entries: _entries, _updated: new Date().toISOString() });
+    const blob    = await encryptData(plain, _masterPwd, _salt);
+    const ok      = await cloudPush(user.id, blob);
+    if (ok) showToast('已同步至雲端 ✓');
+  } catch (e) {
+    console.error('saveToCloud', e);
+  }
+}
+
+window.manualSync = async () => {
+  document.getElementById('sync-btn').textContent = '↻';
+  await saveToCloud();
+  document.getElementById('sync-btn').textContent = '⟳';
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Settings
+// ══════════════════════════════════════════════════════════════════════
+window.showTab = (tab) => {
+  ['vault','settings'].forEach(t => {
+    document.getElementById(`screen-${t}`)?.classList.remove('active');
+  });
+  document.getElementById(`screen-${tab}`)?.classList.add('active');
+};
+
+function updateSettingsInfo() {
+  const el = document.getElementById('settings-email-info');
+  if (el) el.textContent = `登入帳號：${localStorage.getItem('vm_email') || '—'}`;
+  const hasBio = !!localStorage.getItem('vm_webauthn_cred_id');
+  const st     = document.getElementById('webauthn-status');
+  if (st) st.textContent = hasBio ? '已設定指紋登入 ✓' : '尚未設定';
+}
+
+window.doLogout = async () => {
+  await getClient().auth.signOut();
+  _entries = []; _masterPwd = '';
+  document.getElementById('screen-vault').classList.remove('active');
+  document.getElementById('screen-settings').classList.remove('active');
+  document.getElementById('screen-login').classList.add('active');
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-sb-pwd').value = '';
+  document.getElementById('login-master-pwd').value = '';
+  showToast('已登出');
+};
+
+// ══════════════════════════════════════════════════════════════════════
+// Helpers
+// ══════════════════════════════════════════════════════════════════════
+function openModal()  { document.getElementById('entry-modal').classList.add('open'); }
+window.closeModal  = () => { document.getElementById('entry-modal').classList.remove('open'); };
+
+window.toggleVis = (inputId, btn) => {
+  const el  = document.getElementById(inputId);
+  const vis = el.type === 'password';
+  el.type   = vis ? 'text' : 'password';
+};
+
+function esc(s)     { return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function escAttr(s) { return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+window.showToast = (msg, dur = 2500) => {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur);
+};
+
+// 點擊 backdrop 關閉
+document.getElementById('entry-modal').addEventListener('click', e => {
+  if (e.target === e.currentTarget) window.closeModal();
+});
+
+// ── Service Worker 註冊 ───────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(console.warn);
+}
+
+// ── 自動嘗試指紋解鎖 ─────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const hasCred = !!localStorage.getItem('vm_webauthn_cred_id');
+  if (hasCred && window.PublicKeyCredential) {
+    switchLoginTab('bio');
+  }
+});
+</script>
+</body>
+</html>
