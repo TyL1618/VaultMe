@@ -185,8 +185,7 @@ def _cloud_pull(url, anon_key, email, password, master_pwd):
         plaintext = decrypt(payload_str, master_pwd)
         data = json.loads(plaintext)
         return data, uid, True
-    except Exception as e:
-        print(f"[VaultMe] cloud_pull error: {e}")
+    except Exception:
         return None, None, False
 
 

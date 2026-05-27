@@ -320,8 +320,8 @@ class EntryDialog(QDialog):
             QMessageBox.warning(self, "提示", "密碼不能為空")
             return
 
-        extra_fields = [r.get_data() for r in self._extra_rows
-                        if r.get_data()["label"] or r.get_data()["value"]]
+        extra_fields = [d for d in (r.get_data() for r in self._extra_rows)
+                        if d["label"] or d["value"]]
 
         self._result_entry = {
             "id":           self._entry.get("id") or str(uuid.uuid4()),

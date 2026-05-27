@@ -97,7 +97,7 @@ class LoginDialog(QDialog):
                 "沒有儲存提示。\n\n如果真的忘了，只能刪除 vault.enc 重設（資料會遺失）。")
 
     def _on_ok(self):
-        pwd = self.pwd_input.text().strip()
+        pwd = self.pwd_input.text()
         if not pwd:
             return
         self._password = pwd

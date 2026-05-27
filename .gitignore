@@ -9,4 +9,3 @@ vm_cloud.json
 .env
 dist/
 build/
-*.spec
