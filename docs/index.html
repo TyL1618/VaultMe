@@ -265,6 +265,14 @@ input,textarea,select{font-family:var(--font)}
     <input type="search" class="input" id="search-input" placeholder="🔍 搜尋名稱、帳號…" oninput="renderList()">
   </div>
 
+  <!-- 筆數 -->
+  <div id="entry-count" style="
+    padding: 4px 16px 2px;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  "></div>
+
   <!-- 項目列表 -->
   <div class="entry-list" id="entry-list"></div>
 
@@ -691,8 +699,13 @@ function filteredEntries() {
 }
 
 window.renderList = () => {
-  const list = document.getElementById('entry-list');
+  const list    = document.getElementById('entry-list');
+  const countEl = document.getElementById('entry-count');
   const entries = filteredEntries();
+
+  const catLabel = _currentCat === '全部' ? '全部' : _currentCat;
+  if (countEl) countEl.textContent = `${catLabel}　${entries.length} 筆`;
+
   if (!entries.length) {
     list.innerHTML = '<div class="empty">— 沒有項目 —</div>'; return;
   }
