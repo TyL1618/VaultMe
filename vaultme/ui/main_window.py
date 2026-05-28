@@ -403,7 +403,8 @@ class MainWindow(QMainWindow):
         self.list_widget = QWidget()
         self.list_widget.setStyleSheet("background: transparent;")
         self.list_layout = QVBoxLayout(self.list_widget)
-        self.list_layout.setContentsMargins(0, 0, 0, S(12))
+        # 右邊距預留滾輪條空間，避免卡片被覆蓋（S(14) 略大於最大縮放下的 S(10) 滾輪寬）
+        self.list_layout.setContentsMargins(0, 0, S(14), S(12))
         self.list_layout.setSpacing(S(6))
         self.list_layout.addStretch()
 

@@ -176,14 +176,29 @@ QComboBox QAbstractItemView {{
 
 QScrollArea {{ border: none; background: transparent; }}
 QScrollBar:vertical {{
-    background: {CP['panel']};
-    width: {S(8)}px; border-radius: {S(4)}px;
+    background: rgba(5,8,15,0.7);
+    width: {S(10)}px;
+    border-radius: {S(5)}px;
+    margin: {S(2)}px {S(2)}px {S(2)}px {S(2)}px;
 }}
 QScrollBar::handle:vertical {{
-    background: {CP['cyan_dim']};
-    border-radius: {S(4)}px; min-height: {S(24)}px;
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0   #00f5ff,
+        stop:0.5 #c084fc,
+        stop:1   #ff2d78);
+    border-radius: {S(5)}px;
+    min-height: {S(28)}px;
+    border: 1px solid rgba(0,245,255,0.45);
+}}
+QScrollBar::handle:vertical:hover {{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+        stop:0   #7dffff,
+        stop:0.5 #d8a4ff,
+        stop:1   #ff6aad);
+    border: 1px solid rgba(0,245,255,0.9);
 }}
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: transparent; }}
 
 QDialog {{
     background-color: #0a1525;
