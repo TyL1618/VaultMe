@@ -82,10 +82,15 @@ def run():
 
     # ── 開啟主視窗 ───────────────────────────────────────────────────
     window = MainWindow(data)
-    w, h   = theme.S(920), theme.S(620)
     rect   = screen.availableGeometry()
+    # 視窗尺寸不超過螢幕可用面積，防止縮放過大時標題列跑出螢幕
+    w = min(theme.S(920), rect.width())
+    h = min(theme.S(620), rect.height())
+    # 同步覆蓋最小尺寸限制（否則 setMinimumSize 會頂回去）
+    window.setMinimumSize(min(theme.S(860), rect.width()),
+                          min(theme.S(580), rect.height()))
     window.resize(w, h)
-    window.move(rect.x() + (rect.width() - w) // 2,
+    window.move(rect.x() + (rect.width()  - w) // 2,
                 rect.y() + (rect.height() - h) // 2)
     window.show()
     sys.exit(app.exec())
