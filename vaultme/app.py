@@ -29,8 +29,12 @@ def run():
         app.setWindowIcon(QIcon(_icon_path))
 
     # ── DPI 縮放 ─────────────────────────────────────────────────────
-    screen = app.primaryScreen()
-    scale  = max(0.8, min(2.5, screen.logicalDotsPerInch() / 96.0))
+    screen    = app.primaryScreen()
+    dpi_scale = max(0.8, min(2.5, screen.logicalDotsPerInch() / 96.0))
+    # 使用者在設定裡自訂的縮放優先；沒設定就用 DPI 自動值
+    _cfg  = data_manager.load_config()
+    scale = float(_cfg.get("ui_scale", dpi_scale))
+    scale = max(0.8, min(2.5, scale))
     theme.set_scale(scale)
     app.setStyleSheet(theme.get_stylesheet())
 

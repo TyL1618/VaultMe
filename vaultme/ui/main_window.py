@@ -17,9 +17,9 @@ from vaultme.theme import CP, S, Sf, CATEGORY_COLORS, get_stylesheet, CpPanel, s
 from vaultme.core import data_manager
 from vaultme.ui.entry_dialog import EntryDialog
 
-CATEGORIES     = ["全部", "銀行", "社群", "Email", "軟體", "其他"]
+CATEGORIES     = ["全部", "銀行", "社群", "Email", "娛樂", "購物", "政府", "軟體", "其他"]
 CAT_ICONS      = {"全部": "☰", "銀行": "🏦", "社群": "💬", "Email": "✉",
-                  "軟體": "💻", "其他": "⋯"}
+                  "娛樂": "🎮", "購物": "🛒", "政府": "🏛", "軟體": "💻", "其他": "⋯"}
 SYNC_INTERVAL  = 5 * 60 * 1000   # 5 分鐘（ms）
 CLIPBOARD_TTL  = 30               # 秒
 
@@ -79,6 +79,20 @@ class EntryCard(QFrame):
             letter-spacing: 1px;
         """)
         top_row.addWidget(cat_badge)
+
+        owner = entry.get("owner", "").strip()
+        if owner:
+            owner_badge = QLabel(f" 👤 {owner} ")
+            owner_badge.setStyleSheet(f"""
+                color: {CP['muted']};
+                background: transparent;
+                border: 1px solid rgba(122,170,187,0.3);
+                border-radius: {S(3)}px;
+                font-size: {S(9)}px;
+                padding: {S(1)}px {S(5)}px;
+            """)
+            top_row.addWidget(owner_badge)
+
         top_row.addStretch()
         outer.addLayout(top_row)
 
@@ -450,7 +464,8 @@ class MainWindow(QMainWindow):
             entries = [e for e in entries
                        if self._search_text in e.get("name", "").lower()
                        or self._search_text in e.get("account", "").lower()
-                       or self._search_text in e.get("note", "").lower()]
+                       or self._search_text in e.get("note", "").lower()
+                       or self._search_text in e.get("owner", "").lower()]
         return entries
 
     def _refresh_list(self):
@@ -607,27 +622,145 @@ class MainWindow(QMainWindow):
 
     # ── 設定 ───────────────────────────────────────────────────────────
     def _show_settings(self):
-        from PyQt6.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton
+        from PyQt6.QtWidgets import (QDialog, QVBoxLayout, QHBoxLayout,
+                                     QLabel, QPushButton, QFrame)
+        from vaultme import theme as _theme
+
         dlg = QDialog(self)
         dlg.setWindowTitle("設定")
-        dlg.setMinimumWidth(S(400))
+        dlg.setMinimumWidth(S(460))
         dlg.setStyleSheet(f"""
-            QDialog {{ background: #07101e; border: 1px solid {CP['cyan_dim']}; }}
-            QLabel  {{ color: {CP['text']}; font-size: {S(12)}px; }}
+            QDialog {{ background: #07101e; border: 1px solid {CP['cyan_dim']};
+                       border-radius: {S(8)}px; }}
+            QLabel  {{ color: {CP['text']}; font-size: {S(12)}px; background: transparent; }}
+            QLabel#section {{ color: {CP['cyan_dim']}; font-size: {S(10)}px;
+                              letter-spacing: 2px; font-weight: bold; }}
+            QLabel#dim {{ color: {CP['muted']}; font-size: {S(11)}px; }}
         """)
         lay = QVBoxLayout(dlg)
-        lay.setContentsMargins(S(24), S(20), S(24), S(20))
-        lay.setSpacing(S(10))
+        lay.setContentsMargins(S(28), S(24), S(28), S(20))
+        lay.setSpacing(S(14))
 
-        lay.addWidget(QLabel(f"資料位置：\n{data_manager.DATA_FILE}"))
-        lay.addWidget(QLabel(f"雲端設定：\n{data_manager.CLOUD_CFG}"))
-        lay.addWidget(QLabel(
-            "雲端推送：" + ("已啟用 ✓" if data_manager.is_cloud_push_allowed() else "已停用（防呆保護）")
-        ))
-        lay.addSpacing(S(8))
-        close = QPushButton("關閉")
-        close.clicked.connect(dlg.accept)
-        lay.addWidget(close)
+        # ── 標題 ───────────────────────────────────────────────────
+        title_lbl = QLabel("⚙  設定")
+        title_lbl.setStyleSheet(f"""
+            color: {CP['cyan']}; font-family: 'Courier New', monospace;
+            font-size: {S(15)}px; font-weight: bold; letter-spacing: 2px;
+        """)
+        lay.addWidget(title_lbl)
+
+        def _sep():
+            s = QFrame(); s.setFixedHeight(1)
+            s.setStyleSheet(f"background: {CP['border']}; border: none;")
+            lay.addWidget(s)
+
+        _sep()
+
+        # ── 字體縮放 ───────────────────────────────────────────────
+        lbl_scale = QLabel("介面縮放")
+        lbl_scale.setObjectName("section")
+        lay.addWidget(lbl_scale)
+
+        cfg          = data_manager.load_config()
+        current_ui   = float(cfg.get("ui_scale", _theme.SCALE))
+        PRESETS      = [(0.8, "80%"), (1.0, "100%"), (1.25, "125%"),
+                        (1.5, "150%"), (1.75, "175%")]
+
+        scale_row = QHBoxLayout()
+        scale_row.setSpacing(S(6))
+
+        notice_lbl = QLabel()
+        notice_lbl.setObjectName("dim")
+
+        def _make_scale_btns(selected_val):
+            # 清除舊按鈕
+            while scale_row.count():
+                item = scale_row.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+            for val, label in PRESETS:
+                is_sel = abs(val - selected_val) < 0.01
+                btn = QPushButton(label)
+                btn.setFixedHeight(S(32))
+                if is_sel:
+                    btn.setStyleSheet(f"""
+                        QPushButton {{
+                            background: rgba(0,245,255,0.18);
+                            border: 1px solid {CP['cyan']};
+                            border-radius: {S(4)}px;
+                            color: {CP['cyan']};
+                            font-family: 'Courier New', monospace;
+                            font-size: {S(11)}px; font-weight: bold;
+                            padding: 0 {S(10)}px;
+                        }}
+                    """)
+                else:
+                    btn.setStyleSheet(f"""
+                        QPushButton {{
+                            background: transparent;
+                            border: 1px solid {CP['border']};
+                            border-radius: {S(4)}px;
+                            color: {CP['muted']};
+                            font-family: 'Courier New', monospace;
+                            font-size: {S(11)}px;
+                            padding: 0 {S(10)}px;
+                        }}
+                        QPushButton:hover {{
+                            border-color: {CP['cyan_dim']}; color: {CP['text']};
+                        }}
+                    """)
+
+                def _on_click(v=val):
+                    c = data_manager.load_config()
+                    c["ui_scale"] = v
+                    data_manager.save_config(c)
+                    notice_lbl.setText(f"✓ 已儲存（{v*100:.0f}%），重新啟動後生效")
+                    notice_lbl.setStyleSheet(
+                        f"color: {CP['green']}; font-size: {S(11)}px;")
+                    _make_scale_btns(v)
+
+                btn.clicked.connect(_on_click)
+                scale_row.addWidget(btn)
+            scale_row.addStretch()
+
+        _make_scale_btns(current_ui)
+        lay.addLayout(scale_row)
+        lay.addWidget(notice_lbl)
+
+        _sep()
+
+        # ── 資料資訊 ───────────────────────────────────────────────
+        lbl_data = QLabel("資料與雲端")
+        lbl_data.setObjectName("section")
+        lay.addWidget(lbl_data)
+
+        for text in [
+            f"本地資料：{data_manager.DATA_FILE}",
+            f"雲端設定：{data_manager.CLOUD_CFG}",
+            "雲端推送：" + ("已啟用 ✓" if data_manager.is_cloud_push_allowed()
+                           else "已停用（防呆保護）"),
+        ]:
+            lbl = QLabel(text)
+            lbl.setObjectName("dim")
+            lbl.setWordWrap(True)
+            lay.addWidget(lbl)
+
+        _sep()
+
+        # ── 關閉 ───────────────────────────────────────────────────
+        close_btn = QPushButton("關閉")
+        close_btn.setFixedHeight(S(36))
+        close_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent; border: 1px solid {CP['border']};
+                border-radius: {S(4)}px; color: {CP['muted']};
+                font-family: 'Courier New', monospace; font-size: {S(12)}px;
+            }}
+            QPushButton:hover {{ background: rgba(255,255,255,0.04); color: {CP['text']}; }}
+        """)
+        close_btn.clicked.connect(dlg.accept)
+        lay.addWidget(close_btn)
+
         dlg.exec()
 
     # ── 快捷鍵 ─────────────────────────────────────────────────────────

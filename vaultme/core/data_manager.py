@@ -57,6 +57,7 @@ DATA_DIR    = _get_data_dir()
 DATA_FILE   = os.path.join(DATA_DIR, "vault.enc")
 HINT_FILE   = os.path.join(DATA_DIR, "vault.hint")
 CLOUD_CFG   = os.path.join(DATA_DIR, "vm_cloud.json")
+CONFIG_FILE = os.path.join(DATA_DIR, "vaultme_config.json")
 
 _CLOUD_TIMEOUT  = 6
 _SUPABASE_TABLE = "vaultme"
@@ -316,6 +317,27 @@ def load_data(master_pwd: str) -> dict:
 
 def is_cloud_push_allowed() -> bool:
     return _cloud_push_allowed
+
+
+# ── UI 設定（縮放比例等）─────────────────────────────────────────
+def load_config() -> dict:
+    """讀取 vaultme_config.json，不存在或損毀時回傳空 dict"""
+    try:
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return {}
+
+
+def save_config(cfg: dict):
+    """寫入 vaultme_config.json"""
+    try:
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, ensure_ascii=False, indent=2)
+    except Exception:
+        pass
 
 
 # ── 公開 API：save_data ───────────────────────────────────────────────

@@ -15,7 +15,7 @@ from PyQt6.QtGui import QFont
 
 from vaultme.theme import CP, S, get_dialog_style, CATEGORY_COLORS
 
-CATEGORIES = ["銀行", "社群", "Email", "軟體", "其他"]
+CATEGORIES = ["銀行", "社群", "Email", "娛樂", "購物", "政府", "軟體", "其他"]
 
 
 class ExtraFieldRow(QWidget):
@@ -179,6 +179,11 @@ class EntryDialog(QDialog):
         self.account_edit.setPlaceholderText("帳號 / Email / 使用者名稱")
         _field("帳號 / 使用者名稱", self.account_edit)
 
+        # 持有人
+        self.owner_edit = QLineEdit(self._entry.get("owner", ""))
+        self.owner_edit.setPlaceholderText("例：蔡昀龍（選填，多人共用時區分帳號所有人）")
+        _field("持有人（選填）", self.owner_edit)
+
         # 密碼
         pwd_lbl = QLabel("密碼 *")
         pwd_lbl.setStyleSheet(f"color: {CP['muted']}; font-size: {S(11)}px; letter-spacing: 1px;")
@@ -328,6 +333,7 @@ class EntryDialog(QDialog):
             "category":     self.cat_combo.currentText(),
             "name":         name,
             "account":      self.account_edit.text().strip(),
+            "owner":        self.owner_edit.text().strip(),
             "password":     pwd,
             "url":          self.url_edit.text().strip(),
             "note":         self.note_edit.toPlainText().strip(),
