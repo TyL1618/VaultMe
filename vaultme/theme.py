@@ -176,28 +176,25 @@ QComboBox QAbstractItemView {{
 
 QScrollArea {{ border: none; background: transparent; }}
 QScrollBar:vertical {{
-    background: rgba(5,8,15,0.7);
+    background: {CP['panel']};
     width: {S(10)}px;
     border-radius: {S(5)}px;
-    margin: {S(2)}px {S(2)}px {S(2)}px {S(2)}px;
+    border: 1px solid rgba(0,245,255,0.10);
+    margin: 0;
 }}
 QScrollBar::handle:vertical {{
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0   #00f5ff,
-        stop:0.5 #c084fc,
-        stop:1   #ff2d78);
-    border-radius: {S(5)}px;
+        stop:0 {CP['pink']}, stop:1 {CP['cyan']});
+    border-radius: {S(4)}px;
     min-height: {S(28)}px;
-    border: 1px solid rgba(0,245,255,0.45);
+    border: 1px solid rgba(0,245,255,0.55);
 }}
 QScrollBar::handle:vertical:hover {{
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-        stop:0   #7dffff,
-        stop:0.5 #d8a4ff,
-        stop:1   #ff6aad);
-    border: 1px solid rgba(0,245,255,0.9);
+        stop:0 #ff6ba0, stop:1 #40faff);
+    border: 1px solid {CP['cyan']};
 }}
-QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; }}
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {{ height: 0; border: none; }}
 QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {{ background: transparent; }}
 
 QDialog {{
