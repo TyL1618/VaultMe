@@ -339,12 +339,17 @@ input,textarea,select{font-family:var(--font)}
       <label class="form-label">分類</label>
       <select class="input" id="entry-cat">
         <option>銀行</option><option>社群</option>
-        <option>Email</option><option>軟體</option><option>其他</option>
+        <option>Email</option><option>娛樂</option><option>購物</option>
+        <option>政府</option><option>軟體</option><option>其他</option>
       </select>
     </div>
     <div class="form-group">
       <label class="form-label">帳號 / Email / 使用者名稱</label>
       <input type="text" class="input" id="entry-account" placeholder="帳號" autocomplete="off">
+    </div>
+    <div class="form-group">
+      <label class="form-label">持有人（選填）</label>
+      <input type="text" class="input" id="entry-owner" placeholder="例：蔡昀龍（多人共用時區分帳號所有人）" autocomplete="off">
     </div>
     <div class="form-group">
       <label class="form-label">密碼 *</label>
@@ -405,8 +410,8 @@ let _clipTimer    = null;
 let _clipBtn      = null;
 let _editingId    = null;        // 正在編輯的 entry id
 let _undoStack    = [];
-const CATS        = ['全部','銀行','社群','Email','軟體','其他'];
-const CAT_COLORS  = {銀行:'#ffd700',社群:'#00f5ff',Email:'#ff9500',軟體:'#00ff88',其他:'#7aaabb'};
+const CATS        = ['全部','銀行','社群','Email','娛樂','購物','政府','軟體','其他'];
+const CAT_COLORS  = {銀行:'#ffd700',社群:'#00f5ff',Email:'#ff9500',娛樂:'#c084fc',購物:'#fb923c',政府:'#94a3b8',軟體:'#00ff88',其他:'#7aaabb'};
 
 // ══════════════════════════════════════════════════════════════════════
 // Crypto
@@ -698,9 +703,10 @@ function entryCardHtml(e) {
   const color = CAT_COLORS[e.category] || 'var(--muted)';
   return `
   <div class="card entry-card" id="card-${e.id}">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
       <span class="entry-name">${esc(e.name)}</span>
       <span class="badge" style="color:${color};border-color:${color}44">${esc(e.category)}</span>
+      ${e.owner ? `<span class="badge" style="color:var(--muted);border-color:rgba(122,170,187,0.3)">👤 ${esc(e.owner)}</span>` : ''}
     </div>
     <div class="entry-account">${esc(e.account||'—')}</div>
     <div class="entry-actions">
@@ -781,7 +787,7 @@ window.openEditModal = (id) => {
 };
 
 function clearForm() {
-  ['entry-name','entry-account','entry-pwd','entry-url','entry-note'].forEach(id=>{
+  ['entry-name','entry-account','entry-owner','entry-pwd','entry-url','entry-note'].forEach(id=>{
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -790,12 +796,13 @@ function clearForm() {
 }
 
 function fillForm(e) {
-  document.getElementById('entry-name').value    = e.name    || '';
-  document.getElementById('entry-account').value = e.account || '';
-  document.getElementById('entry-pwd').value     = e.password|| '';
-  document.getElementById('entry-url').value     = e.url     || '';
-  document.getElementById('entry-note').value    = e.note    || '';
-  document.getElementById('entry-cat').value     = e.category|| '其他';
+  document.getElementById('entry-name').value    = e.name     || '';
+  document.getElementById('entry-account').value = e.account  || '';
+  document.getElementById('entry-owner').value   = e.owner    || '';
+  document.getElementById('entry-pwd').value     = e.password || '';
+  document.getElementById('entry-url').value     = e.url      || '';
+  document.getElementById('entry-note').value    = e.note     || '';
+  document.getElementById('entry-cat').value     = e.category || '其他';
   document.getElementById('extra-fields-container').innerHTML = '';
   (e.extra_fields || []).forEach(f => addExtraField(f.label, f.value));
 }
@@ -829,6 +836,7 @@ window.saveEntry = async () => {
     category:     document.getElementById('entry-cat').value,
     name,
     account:      document.getElementById('entry-account').value.trim(),
+    owner:        document.getElementById('entry-owner').value.trim(),
     password:     pwd,
     url:          document.getElementById('entry-url').value.trim(),
     note:         document.getElementById('entry-note').value.trim(),
