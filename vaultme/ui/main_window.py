@@ -710,16 +710,19 @@ class MainWindow(QMainWindow):
                         }}
                     """)
 
-                def _on_click(v=val):
-                    c = data_manager.load_config()
-                    c["ui_scale"] = v
-                    data_manager.save_config(c)
-                    notice_lbl.setText(f"✓ 已儲存（{v*100:.0f}%），重新啟動後生效")
-                    notice_lbl.setStyleSheet(
-                        f"color: {CP['green']}; font-size: {S(11)}px;")
-                    _make_scale_btns(v)
+                def _make_handler(sv):
+                    def handler():
+                        c = data_manager.load_config()
+                        c["ui_scale"] = sv
+                        data_manager.save_config(c)
+                        notice_lbl.setText(
+                            f"✓ 已儲存（{sv*100:.0f}%），重新啟動後生效")
+                        notice_lbl.setStyleSheet(
+                            f"color: {CP['green']}; font-size: {S(11)}px;")
+                        _make_scale_btns(sv)
+                    return handler
 
-                btn.clicked.connect(_on_click)
+                btn.clicked.connect(_make_handler(val))
                 scale_row.addWidget(btn)
             scale_row.addStretch()
 
