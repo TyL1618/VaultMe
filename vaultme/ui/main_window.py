@@ -96,9 +96,9 @@ class EntryCard(QFrame):
         top_row.addStretch()
         outer.addLayout(top_row)
 
-        # ── 下排：帳號 + 密碼操作 ──────────────────────────────────────
-        bot_row = QHBoxLayout()
-        bot_row.setSpacing(S(8))
+        # ── 第二列：帳號 ──────────────────────────────────────────────
+        acc_row = QHBoxLayout()
+        acc_row.setSpacing(0)
 
         account_lbl = QLabel(entry.get("account", "") or "—")
         account_lbl.setStyleSheet(f"""
@@ -106,8 +106,13 @@ class EntryCard(QFrame):
             font-family: 'Courier New', monospace;
             font-size: {S(11)}px;
         """)
-        bot_row.addWidget(account_lbl)
-        bot_row.addStretch()
+        acc_row.addWidget(account_lbl)
+        acc_row.addStretch()
+        outer.addLayout(acc_row)
+
+        # ── 第三列：密碼 + 操作按鈕 ───────────────────────────────────
+        btn_row = QHBoxLayout()
+        btn_row.setSpacing(S(8))
 
         # 密碼顯示（預設隱藏）
         self.pwd_lbl = QLabel("●●●●●●●●")
@@ -117,14 +122,15 @@ class EntryCard(QFrame):
             font-size: {S(11)}px;
         """)
         self._pwd_visible = False
-        bot_row.addWidget(self.pwd_lbl)
+        btn_row.addWidget(self.pwd_lbl)
+        btn_row.addStretch()
 
         # 眼睛按鈕
         eye_btn = QPushButton("👁")
         eye_btn.setFixedSize(S(26), S(26))
         eye_btn.setStyleSheet(self._icon_btn_style())
         eye_btn.clicked.connect(self._toggle_pwd)
-        bot_row.addWidget(eye_btn)
+        btn_row.addWidget(eye_btn)
 
         # 複製按鈕
         self.copy_btn = QPushButton("複製")
@@ -142,7 +148,7 @@ class EntryCard(QFrame):
             QPushButton:hover {{ background: rgba(0,255,136,0.1); color: {CP['green']}; }}
         """)
         self.copy_btn.clicked.connect(self._on_copy)
-        bot_row.addWidget(self.copy_btn)
+        btn_row.addWidget(self.copy_btn)
 
         # 編輯按鈕
         edit_btn = QPushButton("編輯")
@@ -160,9 +166,9 @@ class EntryCard(QFrame):
             QPushButton:hover {{ background: rgba(0,245,255,0.08); color: {CP['cyan']}; }}
         """)
         edit_btn.clicked.connect(lambda: self.edit_clicked.emit(self.entry))
-        bot_row.addWidget(edit_btn)
+        btn_row.addWidget(edit_btn)
 
-        outer.addLayout(bot_row)
+        outer.addLayout(btn_row)
 
     def _icon_btn_style(self):
         return f"""
@@ -399,11 +405,11 @@ class MainWindow(QMainWindow):
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
 
         self.list_widget = QWidget()
         self.list_widget.setStyleSheet("background: transparent;")
         self.list_layout = QVBoxLayout(self.list_widget)
-        # 右邊距預留滾輪條空間，避免卡片被覆蓋（S(14) 略大於最大縮放下的 S(10) 滾輪寬）
         self.list_layout.setContentsMargins(0, 0, S(14), S(12))
         self.list_layout.setSpacing(S(6))
         self.list_layout.addStretch()
@@ -548,7 +554,10 @@ class MainWindow(QMainWindow):
 
         # 重置上一張卡的計時
         if self._clipboard_card and self._clipboard_card is not card:
-            self._clipboard_card.set_copied_state(0)
+            try:
+                self._clipboard_card.set_copied_state(0)
+            except RuntimeError:
+                pass
 
         self._clipboard_card      = card
         self._clipboard_countdown = CLIPBOARD_TTL
@@ -559,7 +568,13 @@ class MainWindow(QMainWindow):
             return
         self._clipboard_countdown -= 1
         if self._clipboard_card:
-            self._clipboard_card.set_copied_state(self._clipboard_countdown)
+            try:
+                self._clipboard_card.set_copied_state(self._clipboard_countdown)
+            except RuntimeError:
+                # Card widget was deleted (e.g. list rebuilt during search); clean up refs
+                self._clipboard_card = None
+                self._clipboard_countdown = 0
+                return
         if self._clipboard_countdown == 0:
             try:
                 pyperclip.copy("")
@@ -748,6 +763,85 @@ class MainWindow(QMainWindow):
             lbl.setObjectName("dim")
             lbl.setWordWrap(True)
             lay.addWidget(lbl)
+
+        _sep()
+
+        # ── 修改主密碼 ─────────────────────────────────────────────
+        lbl_chg = QLabel("主密碼")
+        lbl_chg.setObjectName("section")
+        lay.addWidget(lbl_chg)
+
+        from PyQt6.QtWidgets import QLineEdit
+        pwd_notice = QLabel()
+        pwd_notice.setObjectName("dim")
+
+        def _field(placeholder):
+            f = QLineEdit()
+            f.setPlaceholderText(placeholder)
+            f.setEchoMode(QLineEdit.EchoMode.Password)
+            f.setFixedHeight(S(32))
+            f.setStyleSheet(f"""
+                QLineEdit {{
+                    background: rgba(0,245,255,0.04);
+                    border: 1px solid {CP['border']};
+                    border-radius: {S(4)}px;
+                    color: {CP['text']};
+                    font-family: 'Courier New', monospace;
+                    font-size: {S(11)}px;
+                    padding: 0 {S(8)}px;
+                }}
+                QLineEdit:focus {{ border-color: {CP['cyan_dim']}; }}
+            """)
+            return f
+
+        old_pwd_input = _field("目前密碼")
+        new_pwd_input = _field("新密碼")
+        cfm_pwd_input = _field("確認新密碼")
+        lay.addWidget(old_pwd_input)
+        lay.addWidget(new_pwd_input)
+        lay.addWidget(cfm_pwd_input)
+
+        chg_btn = QPushButton("確認修改")
+        chg_btn.setFixedHeight(S(34))
+        chg_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: rgba(0,255,136,0.08);
+                border: 1px solid rgba(0,255,136,0.4);
+                border-radius: {S(4)}px;
+                color: {CP['green']};
+                font-family: 'Courier New', monospace;
+                font-size: {S(12)}px;
+            }}
+            QPushButton:hover {{ background: rgba(0,255,136,0.16); }}
+        """)
+
+        def _change_password():
+            old_p = old_pwd_input.text()
+            new_p = new_pwd_input.text()
+            cfm_p = cfm_pwd_input.text()
+
+            if old_p != data_manager.get_master_password():
+                pwd_notice.setText("✗ 目前密碼錯誤")
+                pwd_notice.setStyleSheet(f"color:{CP['pink']};font-size:{S(11)}px;")
+                return
+            if len(new_p) < 4:
+                pwd_notice.setText("✗ 新密碼至少 4 個字元")
+                pwd_notice.setStyleSheet(f"color:{CP['pink']};font-size:{S(11)}px;")
+                return
+            if new_p != cfm_p:
+                pwd_notice.setText("✗ 兩次新密碼不一致")
+                pwd_notice.setStyleSheet(f"color:{CP['pink']};font-size:{S(11)}px;")
+                return
+
+            # 用新密碼重新加密並儲存（清 salt 重新產生）
+            data_manager.change_master_password(self._data, new_p)
+            old_pwd_input.clear(); new_pwd_input.clear(); cfm_pwd_input.clear()
+            pwd_notice.setText("✓ 主密碼已更新")
+            pwd_notice.setStyleSheet(f"color:{CP['green']};font-size:{S(11)}px;")
+
+        chg_btn.clicked.connect(_change_password)
+        lay.addWidget(chg_btn)
+        lay.addWidget(pwd_notice)
 
         _sep()
 

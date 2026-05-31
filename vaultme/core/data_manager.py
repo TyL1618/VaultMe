@@ -100,6 +100,14 @@ def set_master_password(password: str):
     _master_password = password
 
 
+def change_master_password(data: dict, new_password: str):
+    """用新密碼重新加密並儲存（清除 salt 強制產生新 salt）。"""
+    global _master_password, _cached_salt
+    _master_password = new_password
+    _cached_salt = None          # 強制重新產生 salt
+    save_data(data)
+
+
 def get_master_password() -> str:
     return _master_password
 
