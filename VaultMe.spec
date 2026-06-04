@@ -7,13 +7,24 @@ block_cipher = None
 
 a = Analysis(
     ['main.py'],
-    pathex=[],
+    pathex=['.'],
     binaries=[],
     datas=[
         # 圖示打包進去，讓視窗 / 工具列圖示在 EXE 中也能顯示
         ('icon.ico', '.'),
     ],
     hiddenimports=[
+        # 主套件
+        'vaultme',
+        'vaultme.ui',
+        'vaultme.ui.main_window',
+        'vaultme.ui.login_dialog',
+        'vaultme.ui.entry_dialog',
+        'vaultme.core',
+        'vaultme.core.data_manager',
+        'vaultme.crypto',
+        'vaultme.theme',
+        'vaultme.app',
         # cryptography (Rust 後端需要明確列出)
         'cryptography.hazmat.backends.openssl',
         'cryptography.hazmat.bindings._rust',
