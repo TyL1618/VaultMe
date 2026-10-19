@@ -1,5 +1,5 @@
 /* VaultMe Service Worker */
-const CACHE_NAME = 'vaultme-v1';
+const CACHE_NAME = 'vaultme-v2';
 const ASSETS     = ['./index.html', './manifest.json'];
 
 self.addEventListener('install', e => {

@@ -200,21 +200,88 @@ input,textarea,select{font-family:var(--font)}
 <!-- ════════════════════════════════════════════════════════════════════ -->
 <!-- SCREEN: Login                                                       -->
 <!-- ════════════════════════════════════════════════════════════════════ -->
-<div id="screen-login" class="screen active">
+<div id="screen-boot" class="screen active" style="justify-content:center;align-items:center;padding:32px">
+  <div style="text-align:center">
+    <div class="title">🔐 VAULT ME</div>
+    <div class="sub" style="margin-top:14px;letter-spacing:3px">UNLOCKING…</div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- SCREEN: Lock (指紋 / PIN 解鎖)                                       -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div id="screen-lock" class="screen" style="justify-content:center;align-items:center;padding:32px 24px">
+  <div class="login-box" style="text-align:center">
+    <div class="login-logo"><div class="title">🔐 VAULT ME</div><div class="sub">SECURE UNLOCK</div></div>
+
+    <div id="lock-bio">
+      <div style="font-size:54px;margin:10px 0 14px">🫆</div>
+      <p class="muted" id="lock-bio-text" style="margin-bottom:16px">輕觸下方按鈕，用指紋 / Face ID 解鎖</p>
+      <button class="btn" id="lock-bio-btn">指紋解鎖</button>
+    </div>
+
+    <div id="lock-pin" style="display:none">
+      <div class="form-group" style="margin-top:8px;text-align:left">
+        <label class="form-label">PIN 碼</label>
+        <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="input" id="lock-pin-input" placeholder="● ● ● ● ● ●" style="text-align:center;letter-spacing:8px;font-size:18px" autocomplete="off">
+      </div>
+      <button class="btn" id="lock-pin-btn">解鎖</button>
+    </div>
+
+    <div class="login-err" id="lock-err" style="margin-top:12px"></div>
+
+    <div style="margin-top:16px;display:flex;flex-direction:column;gap:6px">
+      <button class="btn btn-ghost btn-sm" id="lock-switch-pin" style="display:none">改用 PIN 解鎖</button>
+      <button class="btn btn-ghost btn-sm" id="lock-switch-bio" style="display:none">改用指紋解鎖</button>
+      <button class="btn btn-ghost btn-sm" id="lock-use-password">用密碼重新登入</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- SCREEN: Enroll (設定快速解鎖)                                        -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div id="screen-enroll" class="screen" style="justify-content:center;align-items:center;padding:32px 24px">
+  <div class="login-box" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:10px">🔐</div>
+    <div class="title" id="enroll-h" style="font-size:18px;letter-spacing:2px">設定快速解鎖</div>
+    <p class="muted" id="enroll-sub" style="margin:10px 0 18px">下次開啟用指紋或 PIN 解鎖，不必再輸入主密碼。</p>
+
+    <div id="enroll-bio-wrap" style="margin-bottom:6px">
+      <button class="btn" id="enroll-bio-btn">啟用 指紋 / Face ID</button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;color:var(--muted);font-size:11px;letter-spacing:1px;margin:16px 0 12px">
+      <span style="flex:1;height:1px;background:var(--border)"></span>
+      <span id="enroll-sep">或設定 6 位 PIN</span>
+      <span style="flex:1;height:1px;background:var(--border)"></span>
+    </div>
+
+    <div class="form-group" style="text-align:left">
+      <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="input" id="enroll-pin" placeholder="6 位 PIN" style="text-align:center;letter-spacing:8px;font-size:18px" autocomplete="off">
+    </div>
+    <div class="form-group" style="text-align:left">
+      <input type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" class="input" id="enroll-pin2" placeholder="再次輸入" style="text-align:center;letter-spacing:8px;font-size:18px" autocomplete="off">
+    </div>
+    <button class="btn btn-green" id="enroll-pin-btn">設定 PIN 並啟用</button>
+
+    <div class="login-err" id="enroll-err" style="margin-top:12px"></div>
+    <div style="margin-top:14px">
+      <button class="btn btn-ghost btn-sm" id="enroll-skip-btn">暫時略過（每次用主密碼）</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<!-- SCREEN: Full Login (首次 / session 過期)                             -->
+<!-- ════════════════════════════════════════════════════════════════════ -->
+<div id="screen-login" class="screen">
   <div class="login-box">
     <div class="login-logo">
       <div class="title">🔐 VAULT ME</div>
       <div class="sub">SECURE PASSWORD MANAGER</div>
     </div>
-
-    <!-- 登入方式切換 -->
-    <div class="login-tabs">
-      <button class="login-tab active" id="tab-pwd" onclick="switchLoginTab('pwd')">主密碼</button>
-      <button class="login-tab" id="tab-bio" onclick="switchLoginTab('bio')">指紋解鎖</button>
-    </div>
-
-    <!-- 主密碼登入 -->
-    <div id="panel-pwd" class="login-form">
+    <div class="login-form">
       <div class="form-group">
         <label class="form-label">Supabase 帳號 Email</label>
         <input type="email" class="input" id="login-email" placeholder="your@email.com" autocomplete="email">
@@ -232,17 +299,6 @@ input,textarea,select{font-family:var(--font)}
       </div>
       <div class="login-err" id="login-err"></div>
       <button class="btn" onclick="doLogin()" id="login-btn">解鎖  →</button>
-    </div>
-
-    <!-- 指紋解鎖 -->
-    <div id="panel-bio" class="login-form" style="display:none">
-      <div style="text-align:center;padding:20px 0;font-size:48px">🫆</div>
-      <p class="muted" style="text-align:center;margin-bottom:16px">使用已註冊的指紋 / Face ID 解鎖</p>
-      <div class="login-err" id="bio-err"></div>
-      <button class="btn" onclick="doBioAuth()" id="bio-btn">指紋驗證</button>
-      <div style="margin-top:12px;text-align:center">
-        <button class="btn btn-ghost btn-sm" onclick="switchLoginTab('pwd')">改用密碼登入</button>
-      </div>
     </div>
   </div>
 </div>
@@ -300,9 +356,9 @@ input,textarea,select{font-family:var(--font)}
   </div>
   <div style="padding:20px 16px;overflow-y:auto;flex:1">
     <div class="card" style="margin-bottom:12px">
-      <div style="color:var(--cyan-dim);font-size:11px;letter-spacing:2px;margin-bottom:10px">指紋 / Face ID</div>
-      <p class="muted" style="margin-bottom:12px;font-size:12px">下次登入可直接用指紋解鎖，無需輸入密碼。</p>
-      <button class="btn btn-sm" id="webauthn-reg-btn" onclick="registerWebAuthn()">註冊指紋</button>
+      <div style="color:var(--cyan-dim);font-size:11px;letter-spacing:2px;margin-bottom:10px">快速解鎖（指紋 / PIN）</div>
+      <p class="muted" style="margin-bottom:12px;font-size:12px">設定後下次開啟用指紋或 PIN 解鎖，不必再輸入主密碼。</p>
+      <button class="btn btn-sm" id="webauthn-reg-btn" onclick="registerWebAuthn()">設定 / 重設 指紋・PIN</button>
       <div id="webauthn-status" class="muted" style="margin-top:8px;font-size:11px"></div>
     </div>
     <div class="card" style="margin-bottom:12px">
@@ -311,6 +367,7 @@ input,textarea,select{font-family:var(--font)}
     </div>
     <div class="card">
       <div style="color:var(--cyan-dim);font-size:11px;letter-spacing:2px;margin-bottom:10px">操作</div>
+      <button class="btn btn-sm" onclick="lockNow()" style="margin-bottom:10px">🔒 立即鎖定</button>
       <button class="btn btn-pink btn-sm" onclick="doLogout()">登出</button>
     </div>
   </div>
@@ -494,15 +551,139 @@ async function cloudPush(userId, payloadStr) {
 }
 
 // ══════════════════════════════════════════════════════════════════════
-// Login
+// Screens
 // ══════════════════════════════════════════════════════════════════════
-window.switchLoginTab = (tab) => {
-  document.getElementById('tab-pwd').classList.toggle('active', tab === 'pwd');
-  document.getElementById('tab-bio').classList.toggle('active', tab === 'bio');
-  document.getElementById('panel-pwd').style.display = tab === 'pwd' ? 'flex' : 'none';
-  document.getElementById('panel-bio').style.display = tab === 'bio' ? 'flex' : 'none';
-};
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('screen-' + id);
+  if (el) el.classList.add('active');
+}
+function showFullLogin() {
+  showScreen('login');
+  const email = localStorage.getItem(LS_EMAIL);
+  if (email) document.getElementById('login-email').value = email;
+}
 
+// ══════════════════════════════════════════════════════════════════════
+// App Lock — WebAuthn PRF（硬體綁定）+ 6 位 PIN 備援
+//   主密碼以 PRF 或 PIN 衍生的金鑰 AES-GCM 包裝後存 localStorage；
+//   衍生金鑰本身永不落地，credId 外洩也無法解出主密碼。
+// ══════════════════════════════════════════════════════════════════════
+const LS_EMAIL      = 'vm_email';
+const LS_LOCK       = 'vm_lock';
+const PIN_ITER      = 310_000;
+const MAX_PIN_FAILS = 10;
+
+function getLock()   { try { return JSON.parse(localStorage.getItem(LS_LOCK) || 'null'); } catch { return null; } }
+function setLock(o)  { localStorage.setItem(LS_LOCK, JSON.stringify(o)); }
+function clearLock() { localStorage.removeItem(LS_LOCK); }
+
+async function platformAuthAvailable() {
+  try { return !!(window.PublicKeyCredential && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); }
+  catch { return false; }
+}
+
+// --- AES-GCM 包裝（以原始 32 byte 金鑰）---
+async function aesWrap(keyRaw, plaintext) {
+  const key    = await crypto.subtle.importKey('raw', keyRaw, { name:'AES-GCM' }, false, ['encrypt']);
+  const nonce  = crypto.getRandomValues(new Uint8Array(12));
+  const cipher = await crypto.subtle.encrypt({ name:'AES-GCM', iv:nonce }, key, new TextEncoder().encode(plaintext));
+  return { nonce: b64e(nonce.buffer), cipher: b64e(cipher) };
+}
+async function aesUnwrap(keyRaw, obj) {
+  const key   = await crypto.subtle.importKey('raw', keyRaw, { name:'AES-GCM' }, false, ['decrypt']);
+  const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv:b64d(obj.nonce) }, key, b64d(obj.cipher));
+  return new TextDecoder().decode(plain);
+}
+
+// --- WebAuthn PRF ---
+async function prfGet(credIdBuf, prfSaltBuf) {
+  const assertion = await navigator.credentials.get({ publicKey: {
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    allowCredentials: [{ type:'public-key', id: credIdBuf }],
+    userVerification: 'required',
+    rpId: WEBAUTHN_RP.id,
+    timeout: 60000,
+    extensions: { prf: { eval: { first: prfSaltBuf } } },
+  }});
+  const r = assertion.getClientExtensionResults();
+  if (!r.prf || !r.prf.results || !r.prf.results.first) throw new Error('NO_PRF');
+  return r.prf.results.first;   // ArrayBuffer (32B)，只在通過生物辨識後才取得
+}
+
+async function enrollBiometric(masterPwd) {
+  const userId = localStorage.getItem('vm_user_id') || localStorage.getItem(LS_EMAIL) || 'vaultme';
+  const cred = await navigator.credentials.create({ publicKey: {
+    challenge: crypto.getRandomValues(new Uint8Array(32)),
+    rp: WEBAUTHN_RP,
+    user: { id: new TextEncoder().encode(userId), name: localStorage.getItem(LS_EMAIL) || 'vaultme', displayName: 'VaultMe' },
+    pubKeyCredParams: [{ type:'public-key', alg:-7 }, { type:'public-key', alg:-257 }],
+    authenticatorSelection: { authenticatorAttachment:'platform', userVerification:'required', residentKey:'preferred' },
+    timeout: 60000, attestation: 'none',
+    extensions: { prf: {} },
+  }});
+  const ext = cred.getClientExtensionResults();
+  if (!ext.prf || !ext.prf.enabled) throw new Error('NO_PRF');
+  const prfSalt = crypto.getRandomValues(new Uint8Array(32));
+  const prfKey  = await prfGet(cred.rawId, prfSalt);
+  const wrapped = await aesWrap(prfKey, masterPwd);
+  const lock = getLock() || {};
+  lock.cred = { id: b64e(cred.rawId), prfSalt: b64e(prfSalt.buffer), wrapped };
+  delete lock.optOut;
+  setLock(lock);
+}
+async function unlockBiometric() {
+  const lock = getLock();
+  if (!lock || !lock.cred) throw new Error('無指紋設定');
+  const prfKey = await prfGet(b64d(lock.cred.id), b64d(lock.cred.prfSalt));
+  return await aesUnwrap(prfKey, lock.cred.wrapped);
+}
+
+// --- 6 位 PIN（PBKDF2 衍生金鑰包裝主密碼）---
+async function pinDeriveKey(pin, saltBuf, usages) {
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name:'PBKDF2', salt:saltBuf, iterations:PIN_ITER, hash:'SHA-256' },
+    km, { name:'AES-GCM', length:256 }, false, usages
+  );
+}
+async function enrollPin(pin, masterPwd) {
+  const salt   = crypto.getRandomValues(new Uint8Array(16));
+  const key    = await pinDeriveKey(pin, salt, ['encrypt']);
+  const nonce  = crypto.getRandomValues(new Uint8Array(12));
+  const cipher = await crypto.subtle.encrypt({ name:'AES-GCM', iv:nonce }, key, new TextEncoder().encode(masterPwd));
+  const lock = getLock() || {};
+  lock.pin = { salt:b64e(salt.buffer), nonce:b64e(nonce.buffer), cipher:b64e(cipher) };
+  delete lock.optOut;
+  setLock(lock);
+}
+async function unlockPin(pin) {
+  const lock = getLock();
+  if (!lock || !lock.pin) throw new Error('無 PIN 設定');
+  const key   = await pinDeriveKey(pin, b64d(lock.pin.salt), ['decrypt']);
+  const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv:b64d(lock.pin.nonce) }, key, b64d(lock.pin.cipher));
+  return new TextDecoder().decode(plain);
+}
+
+// --- 取得主密碼後載入保險箱（session 還在就免再登入）---
+async function unlockWithMaster(masterPwd) {
+  _masterPwd = masterPwd;
+  const { data: { session } } = await getClient().auth.getSession();
+  if (!session) {
+    showFullLogin();
+    const e = document.getElementById('login-err');
+    e.textContent = '連線階段已過期，請重新登入'; e.classList.add('show');
+    return;
+  }
+  const payload = await cloudPull(session.user.id);
+  _entries = payload ? (JSON.parse(await decryptData(payload, masterPwd)).entries || []) : [];
+  localStorage.setItem('vm_user_id', session.user.id);
+  enterVault();
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// Full Login（Supabase 帳密 + 主密碼）
+// ══════════════════════════════════════════════════════════════════════
 window.doLogin = async () => {
   const email    = document.getElementById('login-email').value.trim();
   const sbPwd    = document.getElementById('login-sb-pwd').value;
@@ -520,156 +701,210 @@ window.doLogin = async () => {
   try {
     const { data: authData, error: authErr } = await getClient()
       .auth.signInWithPassword({ email, password: sbPwd });
-    if (authErr) throw new Error(authErr.message);
+    if (authErr) throw new Error('SB:' + authErr.message);
 
-    _masterPwd = masterP;
-    const userId = authData.user.id;
-
-    // 拉雲端資料
+    const userId  = authData.user.id;
     const payload = await cloudPull(userId);
     if (payload) {
-      const plain = await decryptData(payload, masterP);
-      const obj   = JSON.parse(plain);
-      _entries    = obj.entries || [];
+      let plain;
+      try { plain = await decryptData(payload, masterP); }
+      catch { throw new Error('MASTER'); }
+      _entries = JSON.parse(plain).entries || [];
     } else {
       _entries = [];
     }
 
-    // 儲存 session token 到 localStorage（供 WebAuthn 使用）
-    localStorage.setItem('vm_email', email);
+    _masterPwd = masterP;
+    localStorage.setItem(LS_EMAIL, email);
     localStorage.setItem('vm_user_id', userId);
+    // 清除舊版不安全的包裝
+    localStorage.removeItem('vm_webauthn_cred_id');
+    localStorage.removeItem('vm_wrapped_master');
 
-    // 詢問是否要設定 WebAuthn（首次）
-    if (!localStorage.getItem('vm_webauthn_cred_id') && window.PublicKeyCredential) {
-      const regPrompt = confirm('要設定指紋 / Face ID 快速登入嗎？');
-      if (regPrompt) await _registerWebAuthnInternal(masterP, userId);
-    }
-
-    enterVault();
+    const lock = getLock();
+    if (!(lock && (lock.cred || lock.pin || lock.optOut))) { showEnroll(); }
+    else { enterVault(); }
   } catch (e) {
-    errEl.textContent = e.message || '登入失敗';
-    errEl.classList.add('show');
+    const m = e.message === 'MASTER' ? '主密碼錯誤'
+            : (e.message || '').startsWith('SB:') ? ('Supabase 登入失敗：' + e.message.slice(3))
+            : (e.message || '登入失敗');
+    errEl.textContent = m; errEl.classList.add('show');
   } finally {
     btn.textContent = '解鎖  →'; btn.disabled = false;
   }
 };
 
 // ══════════════════════════════════════════════════════════════════════
-// WebAuthn
+// Lock screen（解鎖）
 // ══════════════════════════════════════════════════════════════════════
-async function _registerWebAuthnInternal(masterPwd, userId) {
+async function showLock() {
+  showScreen('lock');
+  document.getElementById('lock-err').classList.remove('show');
+  document.getElementById('lock-pin-input').value = '';
+  const lock   = getLock();
+  const avail  = await platformAuthAvailable();
+  const hasBio = !!(lock && lock.cred && avail);
+  const hasPin = !!(lock && lock.pin);
+  setLockMode(hasBio ? 'bio' : 'pin', hasBio, hasPin);
+  if (hasBio) runBioUnlock();
+  else document.getElementById('lock-pin-input').focus();
+}
+function setLockMode(mode, hasBio, hasPin) {
+  document.getElementById('lock-bio').style.display = mode === 'bio' ? '' : 'none';
+  document.getElementById('lock-pin').style.display = mode === 'pin' ? '' : 'none';
+  document.getElementById('lock-switch-pin').style.display = (mode === 'bio' && hasPin) ? '' : 'none';
+  document.getElementById('lock-switch-bio').style.display = (mode === 'pin' && hasBio) ? '' : 'none';
+}
+async function runBioUnlock() {
+  const errEl = document.getElementById('lock-err');
+  const txt   = document.getElementById('lock-bio-text');
+  errEl.classList.remove('show');
+  txt.textContent = '請完成指紋 / Face ID 驗證…';
   try {
-    // 產生一個隨機 challenge
-    const challenge = crypto.getRandomValues(new Uint8Array(32));
-
-    const cred = await navigator.credentials.create({ publicKey: {
-      challenge,
-      rp: WEBAUTHN_RP,
-      user: { id: new TextEncoder().encode(userId), name: localStorage.getItem('vm_email'), displayName: 'VaultMe' },
-      pubKeyCredParams: [{ type:'public-key', alg:-7 }, { type:'public-key', alg:-257 }],
-      authenticatorSelection: { userVerification:'required', residentKey:'preferred' },
-      timeout: 60000,
-    }});
-
-    // 把 cred ID 存 localStorage，並用它保護主密碼
-    const credId    = b64e(cred.rawId);
-    // 用 WebAuthn assertion 衍生出一個包裝金鑰，加密主密碼
-    const wrappedPwd = await _wrapMasterPwd(masterPwd, cred.rawId);
-
-    localStorage.setItem('vm_webauthn_cred_id', credId);
-    localStorage.setItem('vm_wrapped_master',   wrappedPwd);
-    showToast('指紋已設定 ✓');
+    const master = await unlockBiometric();
+    await unlockWithMaster(master);
   } catch (e) {
-    console.warn('WebAuthn 註冊失敗', e);
+    txt.textContent = '輕觸下方按鈕，用指紋 / Face ID 解鎖';
+    errEl.textContent = '指紋驗證未完成，請再試一次'; errEl.classList.add('show');
+    console.warn('bio unlock', e);
   }
+}
+async function doPinUnlock() {
+  const pin   = document.getElementById('lock-pin-input').value;
+  const errEl = document.getElementById('lock-err');
+  errEl.classList.remove('show');
+  if (!/^\d{4,6}$/.test(pin)) { errEl.textContent = '請輸入 PIN'; errEl.classList.add('show'); return; }
+  try {
+    const master = await unlockPin(pin);
+    const lock = getLock(); if (lock) { lock.fails = 0; setLock(lock); }
+    await unlockWithMaster(master);
+  } catch (e) {
+    const lock = getLock() || {};
+    lock.fails = (lock.fails || 0) + 1; setLock(lock);
+    document.getElementById('lock-pin-input').value = '';
+    const left = MAX_PIN_FAILS - lock.fails;
+    if (left <= 0) {
+      clearLock();
+      try { await getClient().auth.signOut(); } catch {}
+      errEl.textContent = 'PIN 錯誤次數過多，已清除快速解鎖，請用密碼重新登入';
+      errEl.classList.add('show');
+      setTimeout(showFullLogin, 1600);
+    } else {
+      errEl.textContent = `PIN 錯誤（剩 ${left} 次）`; errEl.classList.add('show');
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// Enroll screen（設定快速解鎖）
+// ══════════════════════════════════════════════════════════════════════
+let _enrollBioDone = false;
+async function showEnroll() {
+  showScreen('enroll');
+  _enrollBioDone = false;
+  document.getElementById('enroll-err').textContent = '';
+  document.getElementById('enroll-pin').value  = '';
+  document.getElementById('enroll-pin2').value = '';
+  const avail = await platformAuthAvailable();
+  document.getElementById('enroll-bio-wrap').style.display = avail ? '' : 'none';
+  document.getElementById('enroll-h').textContent   = '設定快速解鎖';
+  document.getElementById('enroll-sub').textContent = '下次開啟用指紋或 PIN 解鎖，不必再輸入主密碼。';
+  document.getElementById('enroll-sep').textContent = avail ? '或設定 6 位 PIN' : '設定 6 位 PIN';
+  document.getElementById('enroll-pin-btn').textContent  = '設定 PIN 並啟用';
+  document.getElementById('enroll-skip-btn').textContent = '暫時略過（每次用主密碼）';
 }
 
 window.registerWebAuthn = async () => {
-  const sb = getClient();
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) { showToast('請先登入'); return; }
-  await _registerWebAuthnInternal(_masterPwd, user.id);
-  document.getElementById('webauthn-status').textContent = '已設定指紋登入';
+  if (!_masterPwd) { showToast('請先登入'); return; }
+  showEnroll();
+};
+window.lockNow = async () => {
+  const lock = getLock();
+  if (lock && (lock.cred || lock.pin)) await showLock();
+  else showToast('尚未設定指紋 / PIN');
 };
 
-window.doBioAuth = async () => {
-  const errEl   = document.getElementById('bio-err');
-  const btn     = document.getElementById('bio-btn');
-  const credId  = localStorage.getItem('vm_webauthn_cred_id');
-  if (!credId) { errEl.textContent='尚未設定指紋'; errEl.classList.add('show'); return; }
+// ══════════════════════════════════════════════════════════════════════
+// Boot
+// ══════════════════════════════════════════════════════════════════════
+async function boot() {
+  showScreen('boot');
+  const email = localStorage.getItem(LS_EMAIL);
+  if (email) document.getElementById('login-email').value = email;
+  // 清除舊版不安全包裝
+  localStorage.removeItem('vm_webauthn_cred_id');
+  localStorage.removeItem('vm_wrapped_master');
+  const lock   = getLock();
+  const avail  = await platformAuthAvailable();
+  const hasBio = !!(lock && lock.cred && avail);
+  const hasPin = !!(lock && lock.pin);
+  if (hasBio || hasPin) await showLock();
+  else showFullLogin();
+}
 
-  btn.textContent='驗證中…'; btn.disabled=true;
-  errEl.classList.remove('show');
+// ── 事件綁定（lock / enroll）──────────────────────────────────────────
+document.getElementById('lock-bio-btn').addEventListener('click', runBioUnlock);
+document.getElementById('lock-pin-btn').addEventListener('click', doPinUnlock);
+document.getElementById('lock-pin-input').addEventListener('keydown', e => { if (e.key === 'Enter') doPinUnlock(); });
+document.getElementById('lock-switch-pin').addEventListener('click', () => {
+  const l = getLock(); setLockMode('pin', !!(l && l.cred), !!(l && l.pin));
+  document.getElementById('lock-pin-input').focus();
+});
+document.getElementById('lock-switch-bio').addEventListener('click', () => {
+  const l = getLock(); setLockMode('bio', !!(l && l.cred), !!(l && l.pin)); runBioUnlock();
+});
+document.getElementById('lock-use-password').addEventListener('click', async () => {
+  try { await getClient().auth.signOut(); } catch {}
+  _masterPwd = ''; _entries = [];
+  showFullLogin();
+});
+
+document.getElementById('enroll-bio-btn').addEventListener('click', async () => {
+  const errEl = document.getElementById('enroll-err'); errEl.textContent = '';
   try {
-    const challenge = crypto.getRandomValues(new Uint8Array(32));
-    const assertion = await navigator.credentials.get({ publicKey: {
-      challenge,
-      allowCredentials: [{ type:'public-key', id:b64d(credId) }],
-      userVerification: 'required',
-      timeout: 60000,
-    }});
-
-    const masterPwd = await _unwrapMasterPwd(assertion.rawId);
-    _masterPwd = masterPwd;
-
-    // Supabase session restore
-    const email  = localStorage.getItem('vm_email');
-    // 無法無密碼取得 session，需要 refresh token（此處提示用戶改用密碼登入重整）
-    // 簡化實作：直接用已快取的 access token 嘗試 getUser
-    const { data: { user } } = await getClient().auth.getUser();
-    if (!user) throw new Error('Session 已過期，請用密碼重新登入');
-
-    const payload = await cloudPull(user.id);
-    if (payload) {
-      const plain = await decryptData(payload, masterPwd);
-      _entries    = JSON.parse(plain).entries || [];
-    } else {
-      _entries = [];
-    }
-    enterVault();
+    await enrollBiometric(_masterPwd);
+    _enrollBioDone = true;
+    showToast('指紋已啟用 ✓');
+    document.getElementById('enroll-bio-wrap').style.display = 'none';
+    document.getElementById('enroll-h').textContent   = '指紋已啟用 ✓';
+    document.getElementById('enroll-sub').textContent = '建議再設一組 6 位 PIN 備援，指紋失效時可用。';
+    document.getElementById('enroll-sep').textContent = '設定備援 PIN';
+    document.getElementById('enroll-pin-btn').textContent  = '設定備援 PIN';
+    document.getElementById('enroll-skip-btn').textContent = '略過，只用指紋';
+    document.getElementById('enroll-pin').focus();
   } catch (e) {
-    errEl.textContent = e.message || '指紋驗證失敗';
-    errEl.classList.add('show');
-  } finally {
-    btn.textContent='指紋驗證'; btn.disabled=false;
+    errEl.textContent = e.message === 'NO_PRF'
+      ? '此裝置指紋無法安全綁定（不支援 PRF），請改用 PIN'
+      : '指紋啟用失敗，請改用 PIN';
+    if (e.message === 'NO_PRF') document.getElementById('enroll-bio-wrap').style.display = 'none';
+    console.warn('enroll bio', e);
   }
-};
-
-// 用隨機派生金鑰包裝主密碼（PBKDF2 + AES-GCM，以 credId 為 salt）
-async function _wrapMasterPwd(masterPwd, credIdBuf) {
-  const wrapSalt  = credIdBuf.slice(0, 32).byteLength >= 16 ? credIdBuf.slice(0, 32)
-                    : crypto.getRandomValues(new Uint8Array(32)).buffer;
-  const wrapNonce = crypto.getRandomValues(new Uint8Array(12));
-  const enc       = new TextEncoder();
-  const km        = await crypto.subtle.importKey('raw', credIdBuf, 'PBKDF2', false, ['deriveKey']);
-  const wKey      = await crypto.subtle.deriveKey(
-    { name:'PBKDF2', salt:wrapSalt, iterations:100_000, hash:'SHA-256' },
-    km, { name:'AES-GCM', length:256 }, false, ['encrypt']
-  );
-  const cipher = await crypto.subtle.encrypt({ name:'AES-GCM', iv:wrapNonce }, wKey, enc.encode(masterPwd));
-  return JSON.stringify({ salt:b64e(wrapSalt), nonce:b64e(wrapNonce.buffer), cipher:b64e(cipher) });
-}
-
-async function _unwrapMasterPwd(credIdBuf) {
-  const obj      = JSON.parse(localStorage.getItem('vm_wrapped_master'));
-  const wrapSalt = b64d(obj.salt);
-  const nonce    = b64d(obj.nonce);
-  const cipher   = b64d(obj.cipher);
-  const km       = await crypto.subtle.importKey('raw', credIdBuf, 'PBKDF2', false, ['deriveKey']);
-  const wKey     = await crypto.subtle.deriveKey(
-    { name:'PBKDF2', salt:wrapSalt, iterations:100_000, hash:'SHA-256' },
-    km, { name:'AES-GCM', length:256 }, false, ['decrypt']
-  );
-  const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv:nonce }, wKey, cipher);
-  return new TextDecoder().decode(plain);
-}
+});
+document.getElementById('enroll-pin-btn').addEventListener('click', async () => {
+  const p1 = document.getElementById('enroll-pin').value;
+  const p2 = document.getElementById('enroll-pin2').value;
+  const errEl = document.getElementById('enroll-err'); errEl.textContent = '';
+  if (!/^\d{6}$/.test(p1)) { errEl.textContent = 'PIN 需為 6 位數字'; return; }
+  if (p1 !== p2) { errEl.textContent = '兩次輸入不一致'; return; }
+  await enrollPin(p1, _masterPwd);
+  showToast(_enrollBioDone ? '已設定備援 PIN ✓' : 'PIN 已啟用 ✓');
+  enterVault();
+});
+document.getElementById('enroll-skip-btn').addEventListener('click', () => {
+  if (_enrollBioDone) { enterVault(); return; }
+  const lock = getLock() || {};
+  lock.optOut = true; delete lock.cred; delete lock.pin;
+  setLock(lock);
+  enterVault();
+});
+document.getElementById('enroll-pin').addEventListener('keydown',  e => { if (e.key === 'Enter') document.getElementById('enroll-pin2').focus(); });
+document.getElementById('enroll-pin2').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('enroll-pin-btn').click(); });
 
 // ══════════════════════════════════════════════════════════════════════
 // Vault Screen
 // ══════════════════════════════════════════════════════════════════════
 function enterVault() {
-  document.getElementById('screen-login').classList.remove('active');
-  document.getElementById('screen-vault').classList.add('active');
+  showScreen('vault');
   buildCatTabs();
   renderList();
   updateSettingsInfo();
@@ -916,19 +1151,22 @@ window.showTab = (tab) => {
 
 function updateSettingsInfo() {
   const el = document.getElementById('settings-email-info');
-  if (el) el.textContent = `登入帳號：${localStorage.getItem('vm_email') || '—'}`;
-  const hasBio = !!localStorage.getItem('vm_webauthn_cred_id');
-  const st     = document.getElementById('webauthn-status');
-  if (st) st.textContent = hasBio ? '已設定指紋登入 ✓' : '尚未設定';
+  if (el) el.textContent = `登入帳號：${localStorage.getItem(LS_EMAIL) || '—'}`;
+  const lock  = getLock();
+  const parts = [];
+  if (lock && lock.cred) parts.push('指紋');
+  if (lock && lock.pin)  parts.push('PIN');
+  const st = document.getElementById('webauthn-status');
+  if (st) st.textContent = parts.length ? ('已啟用：' + parts.join(' + ')) : '尚未設定';
 }
 
 window.doLogout = async () => {
+  if (!confirm('登出會清除此裝置的快速解鎖（指紋 / PIN），下次需用密碼重新登入。確定登出？')) return;
   await getClient().auth.signOut();
   _entries = []; _masterPwd = '';
-  document.getElementById('screen-vault').classList.remove('active');
-  document.getElementById('screen-settings').classList.remove('active');
-  document.getElementById('screen-login').classList.add('active');
-  document.getElementById('login-email').value = '';
+  clearLock();
+  localStorage.removeItem('vm_user_id');
+  showFullLogin();
   document.getElementById('login-sb-pwd').value = '';
   document.getElementById('login-master-pwd').value = '';
   showToast('已登出');
@@ -966,12 +1204,8 @@ if ('serviceWorker' in navigator) {
 }
 
 // ── 自動嘗試指紋解鎖 ─────────────────────────────────────────────────
-window.addEventListener('load', () => {
-  const hasCred = !!localStorage.getItem('vm_webauthn_cred_id');
-  if (hasCred && window.PublicKeyCredential) {
-    switchLoginTab('bio');
-  }
-});
+// 啟動
+boot();
 </script>
 </body>
 </html>
