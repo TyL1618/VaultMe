@@ -9,3 +9,6 @@ vm_cloud.json
 .env
 dist/
 build/
+
+# build_exe.bat creates this (isolated Python env, see setup_env.bat)
+.venv/
