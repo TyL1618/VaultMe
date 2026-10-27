@@ -44,6 +44,7 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
+        'PyQt5', 'PySide2', 'PySide6',   # qtpy 會誤把 PyQt5 拉進來，跟 PyQt6 衝突導致打包中止
         # 不需要的大型套件
         'tkinter',
         'matplotlib',
@@ -81,7 +82,7 @@ exe = EXE(
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=True,          # 若未安裝 UPX 可改為 False（不影響功能）
+    upx=False,         # 未簽章 exe 被 UPX 壓過容易被防毒誤判
     upx_exclude=[],
     runtime_tmpdir=None,
     console=False,     # 不顯示黑色命令列視窗

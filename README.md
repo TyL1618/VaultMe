@@ -24,7 +24,7 @@ python main.py
 ## 打包成 EXE
 
 ```bash
-pyinstaller VaultMe.spec
+build_exe.bat   # 內部跑 pyinstaller VaultMe.spec --noconfirm --clean
 # 輸出：dist\VaultMe.exe
 ```
 

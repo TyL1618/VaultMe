@@ -382,7 +382,7 @@ window.setMinimumSize(min(S(860), rect.width()), min(S(580), rect.height()))
 ## 打包（PyInstaller）
 
 ```bash
-pyinstaller VaultMe.spec
+build_exe.bat   # 內部跑 pyinstaller VaultMe.spec --noconfirm --clean
 # 輸出：dist\VaultMe.exe（單一執行檔，無命令列視窗）
 ```
 

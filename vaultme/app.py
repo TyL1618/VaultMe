@@ -19,6 +19,9 @@ MAX_ATTEMPTS = 5
 
 
 def run():
+    if sys.platform == "win32":  # 工作列圖示：要在建立任何視窗前設定，否則會顯示 python.exe 的圖示
+        import ctypes
+        ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID("yungan.vaultme")
     app = QApplication(sys.argv)
     app.setApplicationName("VaultMe")
 
