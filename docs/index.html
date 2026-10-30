@@ -2,10 +2,10 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#00f5ff">
+<meta name="theme-color" content="#05080f">
 <title>VaultMe</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="favicon.ico" sizes="any">
@@ -88,7 +88,7 @@ input,textarea,select{font-family:var(--font)}
 
 /* ── Toast ────────────────────────────────────────────────── */
 #toast{
-  position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
+  position:fixed;bottom:calc(90px + env(safe-area-inset-bottom, 0px));left:50%;transform:translateX(-50%) translateY(20px);
   background:#0d2035;border:1px solid var(--cyan-dim);border-radius:6px;
   color:var(--cyan);font-size:12px;padding:8px 18px;letter-spacing:1px;
   opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;z-index:999;
@@ -105,7 +105,7 @@ input,textarea,select{font-family:var(--font)}
 .modal{
   width:100%;max-width:640px;margin:0 auto;
   background:#07101e;border:1px solid var(--cyan-dim);
-  border-radius:12px 12px 0 0;padding:20px 20px 32px;
+  border-radius:12px 12px 0 0;padding:20px 20px calc(32px + env(safe-area-inset-bottom, 0px));
   max-height:90vh;overflow-y:auto;
   animation:slide-up .25s ease;
 }
@@ -115,7 +115,8 @@ input,textarea,select{font-family:var(--font)}
 .form-group{margin-bottom:12px}
 
 /* ── Login Screen ─────────────────────────────────────────── */
-#screen-login{justify-content:center;align-items:center;padding:32px 24px;gap:0}
+#screen-login{justify-content:center;align-items:center;gap:0;
+  padding:calc(32px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-right, 0px)) calc(32px + env(safe-area-inset-bottom, 0px)) calc(24px + env(safe-area-inset-left, 0px))}
 .login-box{width:100%;max-width:360px}
 .login-logo{text-align:center;margin-bottom:32px}
 .login-form{display:flex;flex-direction:column;gap:12px}
@@ -138,7 +139,8 @@ input,textarea,select{font-family:var(--font)}
 /* ── Header ───────────────────────────────────────────────── */
 .topbar{
   background:var(--panel);border-bottom:1px solid var(--border);
-  padding:12px 16px;display:flex;align-items:center;gap:10px;
+  padding:calc(12px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) 12px calc(16px + env(safe-area-inset-left, 0px));
+  display:flex;align-items:center;gap:10px;
   flex-shrink:0;
 }
 .topbar-title{color:var(--cyan);font-size:15px;font-weight:bold;letter-spacing:3px;flex:1}
@@ -176,7 +178,7 @@ input,textarea,select{font-family:var(--font)}
 .bottom-nav{
   display:flex;background:var(--panel);
   border-top:1px solid var(--border);flex-shrink:0;
-  padding-bottom:env(safe-area-inset-bottom);
+  padding:0 env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
 }
 .nav-btn{
   flex:1;display:flex;flex-direction:column;align-items:center;
@@ -203,7 +205,7 @@ input,textarea,select{font-family:var(--font)}
 <!-- ════════════════════════════════════════════════════════════════════ -->
 <!-- SCREEN: Login                                                       -->
 <!-- ════════════════════════════════════════════════════════════════════ -->
-<div id="screen-boot" class="screen active" style="justify-content:center;align-items:center;padding:32px">
+<div id="screen-boot" class="screen active" style="justify-content:center;align-items:center;padding:calc(32px + env(safe-area-inset-top, 0px)) calc(32px + env(safe-area-inset-right, 0px)) calc(32px + env(safe-area-inset-bottom, 0px)) calc(32px + env(safe-area-inset-left, 0px))">
   <div style="text-align:center">
     <div class="title">🔐 VAULT ME</div>
     <div class="sub" style="margin-top:14px;letter-spacing:3px">UNLOCKING…</div>
@@ -213,7 +215,7 @@ input,textarea,select{font-family:var(--font)}
 <!-- ════════════════════════════════════════════════════════════════════ -->
 <!-- SCREEN: Lock (指紋 / PIN 解鎖)                                       -->
 <!-- ════════════════════════════════════════════════════════════════════ -->
-<div id="screen-lock" class="screen" style="justify-content:center;align-items:center;padding:32px 24px">
+<div id="screen-lock" class="screen" style="justify-content:center;align-items:center;padding:calc(32px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-right, 0px)) calc(32px + env(safe-area-inset-bottom, 0px)) calc(24px + env(safe-area-inset-left, 0px))">
   <div class="login-box" style="text-align:center">
     <div class="login-logo"><div class="title">🔐 VAULT ME</div><div class="sub">SECURE UNLOCK</div></div>
 
@@ -244,7 +246,7 @@ input,textarea,select{font-family:var(--font)}
 <!-- ════════════════════════════════════════════════════════════════════ -->
 <!-- SCREEN: Enroll (設定快速解鎖)                                        -->
 <!-- ════════════════════════════════════════════════════════════════════ -->
-<div id="screen-enroll" class="screen" style="justify-content:center;align-items:center;padding:32px 24px">
+<div id="screen-enroll" class="screen" style="justify-content:center;align-items:center;padding:calc(32px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-right, 0px)) calc(32px + env(safe-area-inset-bottom, 0px)) calc(24px + env(safe-area-inset-left, 0px))">
   <div class="login-box" style="text-align:center">
     <div style="font-size:48px;margin-bottom:10px">🔐</div>
     <div class="title" id="enroll-h" style="font-size:18px;letter-spacing:2px">設定快速解鎖</div>
@@ -1205,6 +1207,22 @@ document.getElementById('entry-modal').addEventListener('click', e => {
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(console.warn);
 }
+
+// ── 沉浸式全螢幕 ─────────────────────────────────────────────────────
+// 已安裝成 fullscreen PWA 時由 manifest 負責；瀏覽器分頁或 standalone 則在點擊時要求全螢幕。
+// manifest 的 display 在「安裝當下」就鎖定，改了之後要解除安裝再重新加入主畫面才生效。
+function isImmersive() {
+  return matchMedia('(display-mode: fullscreen)').matches ||
+    !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+function tryFullscreen() {
+  if (isImmersive()) return;
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!req) return;
+  try { const p = req.call(el, { navigationUI: 'hide' }); if (p && p.catch) p.catch(() => {}); } catch {}
+}
+document.addEventListener('pointerup', tryFullscreen, { passive: true });
 
 // ── 自動嘗試指紋解鎖 ─────────────────────────────────────────────────
 // 啟動

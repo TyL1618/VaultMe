@@ -326,6 +326,12 @@ save_data(data)
 - WebAuthn API（指紋解鎖，儲存 master password 至 localStorage）
 - Service Worker（離線快取）
 
+### 沉浸式全螢幕
+- `manifest.json`：`display: fullscreen` + `display_override: [fullscreen, standalone, minimal-ui]`；`theme_color` / `background_color` 皆為 `#05080f`。
+- `viewport-fit=cover` + `env(safe-area-inset-*)`：topbar、底部導覽、modal、toast、登入/鎖定/註冊頁都已補 safe-area padding，避免被瀏覽列瀏海/手勢列蓋住。
+- 瀏覽器分頁或 standalone 模式下，每次點擊會嘗試 `requestFullscreen()` 作為備援（`tryFullscreen()`）。
+- **manifest 的 `display` 在「安裝當下」就鎖定，改了不會套用到已安裝的 App——必須解除安裝再重新「加入主畫面」。**（做法移植自 WealthMatrix / CyberMind。）
+
 ### 加密相容性
 Web Crypto API 的 PBKDF2 參數與 Python `cryptography` 庫完全對齊：
 - iterations = 260,000

@@ -4,9 +4,10 @@
   "description": "安全密碼管理器",
   "start_url": "/VaultMe/",
   "scope": "/VaultMe/",
-  "display": "standalone",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
   "background_color": "#05080f",
-  "theme_color": "#00f5ff",
+  "theme_color": "#05080f",
   "orientation": "portrait",
   "icons": [
     {
