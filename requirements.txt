@@ -9,4 +9,5 @@ cryptography==48.0.0
 requests==2.34.0
 certifi==2026.4.22
 pyperclip==1.11.0
+Pillow==12.2.0  # 只有 tools/make_icon.py 產生圖示用，執行期不需要
 pyinstaller==6.20.0  # 打包

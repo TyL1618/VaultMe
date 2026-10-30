@@ -46,7 +46,9 @@ VaultMe/
 ├── main.py                    # 程式進入點
 ├── requirements.txt
 ├── VaultMe.spec               # PyInstaller 打包設定
-├── icon.ico                   # 多尺寸圖示 (16/24/32/48/64/128/256px)
+├── icon.ico                   # 多尺寸圖示 (16/24/32/48/64/128/256px)，由 tools/make_icon.py 產生
+├── tools/
+│   └── make_icon.py           # 產生全部圖示（桌面 ico + PWA png + favicon）；改設計只改這支再重跑
 ├── README.md
 ├── DEVDOC.md
 ├── vaultme/
@@ -63,8 +65,10 @@ VaultMe/
     ├── index.html             # PWA 單頁應用（含 JS）
     ├── sw.js                  # Service Worker（離線快取）
     ├── manifest.json          # PWA 安裝設定
-    ├── icon-192.png
-    └── icon-512.png
+    ├── icon-192.png           # 以下圖示皆由 tools/make_icon.py 產生
+    ├── icon-512.png           # 滿版不透明底，內容在 maskable 安全區內（any / maskable 共用）
+    ├── apple-touch-icon.png   # iOS 主畫面（180px）
+    └── favicon.ico            # 瀏覽器分頁
 ```
 
 ### 資料目錄（`%AppData%\VaultMe\`，不進 git）
